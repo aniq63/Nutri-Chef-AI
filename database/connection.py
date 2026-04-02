@@ -3,7 +3,7 @@ from sqlalchemy.orm import declarative_base
 from sqlalchemy.pool import NullPool
 from typing import AsyncGenerator
 
-from config import get_settings
+from utils.settings import get_settings
 
 settings = get_settings()
 

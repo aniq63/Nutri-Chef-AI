@@ -8,7 +8,7 @@ from sqlalchemy import select
 
 from database.models import User
 from database.connection import get_db
-from config import get_settings
+from utils.settings import get_settings
 
 settings = get_settings()
 

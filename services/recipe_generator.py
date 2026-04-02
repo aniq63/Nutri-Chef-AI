@@ -2,12 +2,13 @@ import json
 from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
 from warnings import filterwarnings
+from config.constants import SYSTEM_PROMPT
 filterwarnings("ignore")
 
 class NutriChefAI:
     def __init__(self, model_name="llama-3.3-70b-versatile"):
         try:
-            self.system_prompt = """YOUR FULL PROMPT HERE"""
+            self.system_prompt = SYSTEM_PROMPT
 
             self.prompt = PromptTemplate(
                 template=self.system_prompt,
