@@ -1,7 +1,6 @@
 import uuid
 import bcrypt
 from typing import Optional
-from datetime import datetime, timedelta
 from fastapi import Depends, HTTPException, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -31,7 +30,10 @@ def generate_session_token() -> str:
 
 
 async def get_current_user(
-    session_token: Optional[str] = Header(None, alias="session_token"),
+    # FIX: alias must be "session-token" (hyphen) to match the HTTP header name
+    # the client sends. FastAPI auto-converts underscores → hyphens when *sending*,
+    # but when an explicit alias is given it is used verbatim, so it must be exact.
+    session_token: Optional[str] = Header(None, alias="session-token"),
     db: AsyncSession = Depends(get_db)
 ) -> User:
 
@@ -40,17 +42,18 @@ async def get_current_user(
             status_code=401,
             detail="Session token is missing"
         )
+
     result = await db.execute(
         select(User).where(User.session_token == session_token)
     )
     user = result.scalar_one_or_none()
-    
+
     if not user:
         raise HTTPException(
             status_code=401,
             detail="Invalid or expired session token"
         )
-    
+
     return user
 
 
@@ -62,13 +65,11 @@ async def get_current_user_from_query(
         select(User).where(User.session_token == session_token)
     )
     user = result.scalar_one_or_none()
-    
+
     if not user:
         raise HTTPException(
             status_code=401,
             detail="Invalid or expired session token"
         )
-    
+
     return user
-
-

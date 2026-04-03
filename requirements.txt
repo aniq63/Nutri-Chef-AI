@@ -12,3 +12,4 @@ langchain
 langchain-groq 
 google-search-results
 requests
+from_root

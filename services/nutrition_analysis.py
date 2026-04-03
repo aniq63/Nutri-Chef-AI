@@ -1,9 +1,12 @@
 import requests
 from typing import List, Dict
+from dotenv import load_dotenv
+import os
 
 class NutritionService:
-    def __init__(self, api_key: str, base_url: str = "https://api.nal.usda.gov/fdc/v1"):
-        self.api_key = api_key
+    def __init__(self,base_url: str = "https://api.nal.usda.gov/fdc/v1"):
+        load_dotenv()
+        self.api_key = os.getenv('USDA_API_KEY')
         self.base_url = base_url
 
     def _fetch_per_100g(self, ingredient: str) -> Dict[str, float]:

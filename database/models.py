@@ -33,6 +33,10 @@ class UserRecipe(Base):
     user_id = Column(Integer, ForeignKey("user.user_id", ondelete="CASCADE"), nullable=False)
 
     ingredients = Column(JSONB, nullable=False)
+
+    # FIX: was `Column(str, ...)` which is invalid — str is a Python type, not SQLAlchemy type
+    cuisine = Column(String(255), nullable=False)
+
     recipe = Column(JSONB, nullable=False)
 
     recipe_image_url = Column(String(500))

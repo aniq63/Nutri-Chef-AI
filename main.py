@@ -1,32 +1,92 @@
-from fastapi import FastAPI , requests
-from database.connection import init_db
-from routes import auth
+import time
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
+
 from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
+from utils.logger import logging as logger
 
+from routes.auth import router as autentication_router
+from routes.ai_recipe_generator import router as recipe_generator_router
+
+# 1. App Configuration (Internal)
+class AppConfig:
+    """Global configuration for the FastAPI application."""
+    TITLE: str = "NUtri Chef AI API"
+    VERSION: str = "1.0.0"
+    DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
+    ALLOW_ORIGINS: list = ["*"]
+    HOST: str = "0.0.0.0"
+    PORT: int = 8000
+
+# 2. Lifespan (Startup/Shutdown)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    Lifespan events for the FastAPI application.
-    Handles startup and shutdown logic.
-    """
-    # Startup: Initialize database tables
-    await init_db()
+    """Event handler for application startup and shutdown events."""
+    logger.info(f"Starting {AppConfig.TITLE} (v{AppConfig.VERSION})...")
     yield
-    # Shutdown: Clean up resources if needed
+    logger.info(f"Shutting down {AppConfig.TITLE}...")
 
-
+# 3. Create FastAPI Instance
 app = FastAPI(
-    title="Nutri Chef AI",
-    version="1.0.0",
-    lifespan=lifespan
+    title=AppConfig.TITLE,
+    version=AppConfig.VERSION,
+    lifespan=lifespan,
+    debug=AppConfig.DEBUG,
 )
 
-@app.get("/api/health", tags=["Health"])
+# 4. Middleware Configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=AppConfig.ALLOW_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# 5. Global Exception Handler
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Captures all unhandled exceptions and returns a structured JSON response."""
+    logger.error(f"Unhandled exception: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": "An internal server error occurred. Please try again later."},
+    )
+
+# Route Inclusion
+app.include_router(autentication_router)
+
+app.include_router(recipe_generator_router)
+
+
+# Basic Routes (Root & Health Check)
+@app.get("/", tags=["Monitoring"])
+async def root():
+    return {
+        "message": f"Welcome to the {AppConfig.TITLE}",
+        "version": AppConfig.VERSION,
+        "docs_url": "/docs"
+    }
+
+@app.get("/health", tags=["Monitoring"])
 async def health_check():
-    """Health check endpoint for API."""
-    return {"message": "Nutri Chef AI API is running", "status": "healthy"}
+    """Simple health check endpoint for monitoring purposes."""
+    return {
+        "status": "Healthy",
+        "timestamp": time.time(),
+        "version": AppConfig.VERSION
+    }
 
-
-# Include routers
-app.include_router(auth.router)
+# 8. Main Entrypoint
+if __name__ == "__main__":
+    import uvicorn
+    logger.info(f"Launching server on {AppConfig.HOST}:{AppConfig.PORT}")
+    PORT = int(os.environ.get("PORT", 8000)) 
+    uvicorn.run("main:app", host="0.0.0.0", port=PORT, reload=AppConfig.DEBUG)
