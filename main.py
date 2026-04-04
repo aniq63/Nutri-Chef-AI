@@ -14,6 +14,7 @@ from utils.logger import logging as logger
 
 from routes.auth import router as autentication_router
 from routes.ai_recipe_generator import router as recipe_generator_router
+from routes.user_recipes import router as user_recipes_router
 
 # 1. App Configuration (Internal)
 class AppConfig:
@@ -64,6 +65,8 @@ async def global_exception_handler(request: Request, exc: Exception):
 app.include_router(autentication_router)
 
 app.include_router(recipe_generator_router)
+
+app.include_router(user_recipes_router)
 
 
 # Basic Routes (Root & Health Check)
