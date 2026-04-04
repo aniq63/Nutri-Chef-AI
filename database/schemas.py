@@ -49,56 +49,60 @@ class RecipeResponse(BaseModel):
 # ── User Own Recipe ───────────────────────────────────────────────────────────
 
 class RecipeTime(BaseModel):
-    """Cooking time breakdown — mirrors the AI recipe JSON format."""
     prep:  str = Field(..., example="10 min")
     cook:  str = Field(..., example="20 min")
     total: str = Field(..., example="30 min")
 
-
 class UserOwnRecipeInput(BaseModel):
-    """
-    Schema for a user submitting their own hand-written recipe.
-
-    Ingredients are raw strings (e.g. '200g salmon fillet').
-    They are automatically:
-      1. Parsed by IngredientParser  →  [{"name": "salmon fillet", "grams": 200}, ...]
-      2. Sent to NutritionService    →  full nutrition breakdown
-      3. Used to fetch a recipe image via ImageSearchService
-
-    The recipe is stored in the same UserRecipes table as AI-generated recipes,
-    so the structure mirrors the AI output format exactly.
-    """
-    title:      str = Field(..., min_length=1, max_length=255, example="Mediterranean Baked Salmon")
-    cuisine:    str = Field(..., min_length=1, max_length=100, example="Mediterranean")
+    title:      str = Field(..., min_length=1, max_length=255)
+    cuisine:    str = Field(..., min_length=1, max_length=100)
     time:       RecipeTime
-    servings:   int = Field(..., gt=0, example=2)
-    difficulty: str = Field(..., example="Easy")
-    why:        Optional[str] = Field(None, example="Lemon complements salmon perfectly")
-    ingredients: List[str] = Field(
-        ...,
-        min_length=1,
-        example=["200g salmon fillet", "200g broccoli, cut into florets", "1 lemon, sliced"],
-        description="Raw ingredient strings — parsed automatically for nutrition analysis"
-    )
-    steps:       List[str]      = Field(..., min_length=1, example=["Step 1: Preheat oven to 200°C"])
-    health_note: Optional[str]  = None
-    chef_tip:    Optional[str]  = None
-    message:     Optional[str]  = None
-    is_for_community: bool      = Field(default=False)
-
+    servings:   int = Field(..., gt=0)
+    difficulty: str
+    why:        Optional[str] = None
+    ingredients: List[str] = Field(..., min_length=1)
+    steps:       List[str] = Field(..., min_length=1)
+    health_note: Optional[str] = None
+    chef_tip:    Optional[str] = None
+    message:     Optional[str] = None
+    is_for_community: bool = Field(default=False)
 
 class UserOwnRecipeResponse(BaseModel):
-    """Response returned after a user's own recipe is saved."""
     recipe_id:        int
     recipe_title:     str
     cuisine:          str
     recipe_image_url: Optional[str]
-    ingredients:      List[dict]    # structured [{name, grams}] after parsing
-    recipe:           dict          # full recipe body as stored in DB
+    ingredients:      List[dict]
+    recipe:           dict
     recipe_nutrition: Optional[dict]
     is_for_community: bool
     created_at:       Optional[datetime]
     community_recipe_id: Optional[int] = None
+    model_config = ConfigDict(from_attributes=True)
+
+
+# ── Fridge Mode ───────────────────────────────────────────────────────────────
+
+class FridgeModeResponse(BaseModel):
+    """
+    Response for the fridge mode endpoint.
+    Includes the detected ingredients from the image on top of the
+    full recipe pipeline output — so the user can see what was found.
+    """
+    # What the image recognition pulled out
+    detected_ingredients: List[str]
+
+    # Full recipe pipeline output (same as AI recipe generator)
+    recipe_id:            int
+    recipe_image_url:     Optional[str]
+    ingredients:          List[dict]    # structured [{name, grams}] after parsing
+    recipe_title:         str
+    recipe:               dict
+    cuisine:              str
+    recipe_nutrition:     Optional[dict]
+    is_for_community:     bool
+    created_at:           Optional[datetime]
+    community_recipe_id:  Optional[int] = None
     model_config = ConfigDict(from_attributes=True)
 
 

@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     groq_api_key: str = Field(..., alias="GROQ_API_KEY")
     usda_api_key: str = Field(..., alias="USDA_API_KEY")
     serpapi_key: str = Field(..., alias="SERPAPI_KEY")
+    ingredients_recogination_token: str = Field(..., alias="INGREDIENTS_RECOGINATION_TOKEN")
     
     # Database
     database_url: str = Field(..., alias="DATABASE_URL")
