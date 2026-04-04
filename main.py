@@ -16,6 +16,7 @@ from routes.auth import router as autentication_router
 from routes.ai_recipe_generator import router as recipe_generator_router
 from routes.user_recipes import router as user_recipes_router
 from routes.community import router as community_recipe_router
+from routes.user_own_recipe import router as user_own_recipe
 
 # 1. App Configuration (Internal)
 class AppConfig:
@@ -70,6 +71,8 @@ app.include_router(recipe_generator_router)
 app.include_router(user_recipes_router)
 
 app.include_router(community_recipe_router)
+
+app.include_router(user_own_recipe)
 
 # Basic Routes (Root & Health Check)
 @app.get("/", tags=["Monitoring"])
