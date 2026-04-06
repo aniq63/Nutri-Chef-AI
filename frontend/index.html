@@ -1,0 +1,2706 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nutri Chef AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --brown: #A47251;
+            --gold: #DD9E59;
+            --cream: #F0D8A1;
+            --sage: #DCF0C3;
+            --white: #FEFCF8;
+            --dark: #2C1A0E;
+            --mid: #6B4226;
+            --light: #FAF7F2;
+            --border: #E8D9C4;
+            --shadow: 0 4px 24px rgba(164, 114, 81, .12);
+            --shadow-lg: 0 12px 48px rgba(164, 114, 81, .18);
+            --r: 16px;
+            --r-sm: 10px;
+            --ff-h: 'Playfair Display', serif;
+            --ff-b: 'DM Sans', sans-serif;
+            --t: .25s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--ff-b);
+            background: var(--white);
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--light);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--cream);
+            border-radius: 99px;
+        }
+
+        /* ── UTILITY ── */
+        .hidden {
+            display: none !important;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 22px;
+            border-radius: 99px;
+            border: none;
+            cursor: pointer;
+            font-family: var(--ff-b);
+            font-size: 14px;
+            font-weight: 500;
+            transition: all var(--t);
+            text-decoration: none;
+            line-height: 1;
+        }
+
+        .btn-primary {
+            background: var(--brown);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: var(--mid);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(164, 114, 81, .3);
+        }
+
+        .btn-gold {
+            background: var(--gold);
+            color: #fff;
+        }
+
+        .btn-gold:hover {
+            background: #c98939;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--brown);
+            border: 1.5px solid var(--brown);
+        }
+
+        .btn-outline:hover {
+            background: var(--brown);
+            color: #fff;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--mid);
+            padding: 10px 14px;
+        }
+
+        .btn-ghost:hover {
+            background: var(--cream);
+            color: var(--dark);
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 11px;
+            border-radius: 99px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .tag-brown {
+            background: rgba(164, 114, 81, .1);
+            color: var(--brown);
+        }
+
+        .tag-gold {
+            background: rgba(221, 158, 89, .14);
+            color: #a06a0a;
+        }
+
+        .tag-sage {
+            background: rgba(220, 240, 195, .55);
+            color: #3d6b33;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: var(--r);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        input,
+        select,
+        textarea {
+            font-family: var(--ff-b);
+            font-size: 14px;
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-sm);
+            background: #fff;
+            color: var(--dark);
+            outline: none;
+            transition: border var(--t);
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--gold);
+        }
+
+        textarea {
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--mid);
+            margin-bottom: 6px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 22px 0;
+        }
+
+        /* ── TOAST ── */
+        #toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            padding: 13px 18px;
+            border-radius: var(--r-sm);
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            animation: slideUp .3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: 300px;
+            background: #fff;
+        }
+
+        .toast-success {
+            border-left: 4px solid #4ade80;
+        }
+
+        .toast-error {
+            border-left: 4px solid #f87171;
+        }
+
+        .toast-info {
+            border-left: 4px solid var(--gold);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── MODAL ── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(44, 26, 14, .48);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity var(--t);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+        }
+
+        .modal {
+            background: #fff;
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 460px;
+            box-shadow: var(--shadow-lg);
+            transform: scale(.96);
+            transition: transform var(--t);
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-family: var(--ff-h);
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+
+        .modal-sub {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 26px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: none;
+            background: var(--light);
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            transition: all var(--t);
+        }
+
+        .modal-close:hover {
+            background: var(--cream);
+            color: var(--dark);
+        }
+
+        /* ── NAVBAR ── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 0 40px;
+            height: 68px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(254, 252, 248, .93);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-logo {
+            font-family: var(--ff-h);
+            font-size: 21px;
+            font-weight: 900;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .nav-logo-icon {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, var(--brown), var(--gold));
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .nav-logo-text span {
+            background: linear-gradient(135deg, var(--brown), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 14px 5px 5px;
+            background: var(--light);
+            border-radius: 99px;
+        }
+
+        .user-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--brown), var(--gold));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        /* ── HERO ── */
+        #page-home {
+            min-height: 100vh;
+            padding-top: 68px;
+        }
+
+        .hero {
+            min-height: calc(100vh - 68px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(70px);
+            pointer-events: none;
+        }
+
+        .orb-1 {
+            width: 560px;
+            height: 560px;
+            background: rgba(240, 216, 161, .45);
+            top: -120px;
+            left: -120px;
+        }
+
+        .orb-2 {
+            width: 420px;
+            height: 420px;
+            background: rgba(220, 240, 195, .5);
+            bottom: -100px;
+            right: -80px;
+        }
+
+        .orb-3 {
+            width: 280px;
+            height: 280px;
+            background: rgba(221, 158, 89, .18);
+            top: 35%;
+            left: 58%;
+        }
+
+        .hero-inner {
+            position: relative;
+            z-index: 1;
+            max-width: 740px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 16px;
+            background: rgba(164, 114, 81, .09);
+            border: 1px solid rgba(164, 114, 81, .18);
+            border-radius: 99px;
+            font-size: 13px;
+            color: var(--brown);
+            font-weight: 500;
+            margin-bottom: 26px;
+            animation: fadeUp .6s ease both;
+        }
+
+        .hero-h1 {
+            font-family: var(--ff-h);
+            font-size: clamp(42px, 7vw, 78px);
+            font-weight: 900;
+            line-height: 1.08;
+            color: var(--dark);
+            margin-bottom: 18px;
+            animation: fadeUp .6s .1s ease both;
+        }
+
+        .hero-h1 em {
+            font-style: italic;
+            background: linear-gradient(135deg, var(--brown), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-p {
+            font-size: 18px;
+            color: #7a6355;
+            line-height: 1.7;
+            max-width: 540px;
+            margin: 0 auto 38px;
+            animation: fadeUp .6s .2s ease both;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeUp .6s .3s ease both;
+        }
+
+        /* ── FEATURES ── */
+        .section {
+            padding: 72px 40px;
+            max-width: 1180px;
+            margin: 0 auto;
+        }
+
+        .section-eyebrow {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--brown);
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            margin-bottom: 10px;
+        }
+
+        .section-h2 {
+            font-family: var(--ff-h);
+            font-size: clamp(26px, 4vw, 40px);
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 44px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+            gap: 18px;
+        }
+
+        .fc {
+            padding: 30px;
+            border-radius: 18px;
+            cursor: pointer;
+            transition: all var(--t);
+            border: 1.5px solid transparent;
+        }
+
+        .fc:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .fc-ai {
+            background: linear-gradient(140deg, #FFF9F0, #FFF2DC);
+            border-color: rgba(221, 158, 89, .18);
+        }
+
+        .fc-ai:hover {
+            border-color: var(--gold);
+        }
+
+        .fc-fridge {
+            background: linear-gradient(140deg, #F2FAE9, #E6F5D4);
+            border-color: rgba(220, 240, 195, .35);
+        }
+
+        .fc-fridge:hover {
+            border-color: #9bc77a;
+        }
+
+        .fc-own {
+            background: linear-gradient(140deg, #FFF6EF, #FDEEE3);
+            border-color: rgba(164, 114, 81, .12);
+        }
+
+        .fc-own:hover {
+            border-color: var(--brown);
+        }
+
+        .fc-cook {
+            background: linear-gradient(140deg, #FEFAEF, #FDF4DC);
+            border-color: rgba(240, 216, 161, .35);
+        }
+
+        .fc-cook:hover {
+            border-color: var(--cream);
+        }
+
+        .fc-icon {
+            font-size: 32px;
+            margin-bottom: 14px;
+            display: block;
+        }
+
+        .fc-title {
+            font-family: var(--ff-h);
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 7px;
+        }
+
+        .fc-desc {
+            font-size: 13px;
+            color: #7a6355;
+            line-height: 1.65;
+            margin-bottom: 14px;
+        }
+
+        .fc-cta {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--brown);
+        }
+
+        /* ── FEED (masonry) ── */
+        .feed-wrap {
+            padding: 56px 40px 80px;
+            max-width: 1180px;
+            margin: 0 auto;
+        }
+
+        .feed-grid {
+            columns: 3 280px;
+            column-gap: 18px;
+        }
+
+        .recipe-card {
+            break-inside: avoid;
+            margin-bottom: 18px;
+            border-radius: 18px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 2px 14px rgba(164, 114, 81, .09);
+            border: 1px solid var(--border);
+            transition: all var(--t);
+            cursor: pointer;
+        }
+
+        .recipe-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .rc-img {
+            width: 100%;
+            aspect-ratio: 4/3;
+            object-fit: cover;
+            display: block;
+            background: var(--light);
+        }
+
+        .rc-img-ph {
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: linear-gradient(135deg, var(--cream), rgba(220, 240, 195, .4));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: var(--brown);
+        }
+
+        .rc-body {
+            padding: 18px;
+        }
+
+        .rc-user-row {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin-bottom: 12px;
+        }
+
+        .rc-av {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--brown), var(--gold));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .rc-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .rc-time {
+            font-size: 11px;
+            color: #bbb;
+        }
+
+        .rc-title {
+            font-family: var(--ff-h);
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .rc-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            margin-top: 10px;
+        }
+
+        .act-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 11px;
+            border-radius: 99px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            color: #aaa;
+            transition: all var(--t);
+            font-family: var(--ff-b);
+        }
+
+        .act-btn:hover {
+            background: var(--light);
+            color: var(--brown);
+        }
+
+        .act-btn.liked {
+            color: #e05252;
+        }
+
+        /* ── INNER PAGES ── */
+        .page {
+            padding-top: 88px;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        .pg-header {
+            max-width: 880px;
+            margin: 0 auto 36px;
+            padding: 0 40px;
+        }
+
+        .pg-header h1 {
+            font-family: var(--ff-h);
+            font-size: clamp(26px, 5vw, 42px);
+            font-weight: 900;
+            color: var(--dark);
+            margin-bottom: 7px;
+        }
+
+        .pg-header p {
+            font-size: 15px;
+            color: #7a6355;
+        }
+
+        .pg-body {
+            max-width: 880px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        .pg-body-wide {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--mid);
+            cursor: pointer;
+            margin-bottom: 18px;
+            padding: 0;
+            border: none;
+            background: none;
+            font-family: var(--ff-b);
+        }
+
+        .back-btn:hover {
+            color: var(--brown);
+        }
+
+        /* ── TWO-COL LAYOUT ── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 28px;
+            align-items: start;
+        }
+
+        .form-card {
+            padding: 32px;
+        }
+
+        /* ── CHIP INPUT ── */
+        .chip-wrap {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+            padding: 10px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-sm);
+            background: #fff;
+            min-height: 50px;
+            cursor: text;
+            transition: border var(--t);
+        }
+
+        .chip-wrap:focus-within {
+            border-color: var(--gold);
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 11px;
+            background: var(--cream);
+            border-radius: 99px;
+            font-size: 13px;
+            color: var(--dark);
+        }
+
+        .chip-x {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #aaa;
+            font-size: 15px;
+            line-height: 1;
+            padding: 0;
+            display: flex;
+            transition: color var(--t);
+        }
+
+        .chip-x:hover {
+            color: var(--brown);
+        }
+
+        #chip-input {
+            border: none;
+            outline: none;
+            font-family: var(--ff-b);
+            font-size: 14px;
+            min-width: 110px;
+            flex: 1;
+            color: var(--dark);
+        }
+
+        /* ── CUISINE PICKER ── */
+        .cuisine-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 7px;
+        }
+
+        .c-opt {
+            padding: 10px 8px;
+            border-radius: var(--r-sm);
+            border: 1.5px solid var(--border);
+            background: #fff;
+            cursor: pointer;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: #888;
+            transition: all var(--t);
+        }
+
+        .c-opt:hover {
+            border-color: var(--gold);
+            color: var(--brown);
+        }
+
+        .c-opt.sel {
+            border-color: var(--brown);
+            background: rgba(164, 114, 81, .07);
+            color: var(--brown);
+            font-weight: 600;
+        }
+
+        /* ── TOGGLE ── */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 13px 0;
+        }
+
+        .toggle {
+            position: relative;
+            width: 42px;
+            height: 23px;
+            flex-shrink: 0;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .tsl {
+            position: absolute;
+            inset: 0;
+            background: #ddd;
+            border-radius: 99px;
+            cursor: pointer;
+            transition: all var(--t);
+        }
+
+        .tsl::before {
+            content: '';
+            position: absolute;
+            width: 17px;
+            height: 17px;
+            left: 3px;
+            top: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: all var(--t);
+        }
+
+        .toggle input:checked+.tsl {
+            background: var(--brown);
+        }
+
+        .toggle input:checked+.tsl::before {
+            transform: translateX(19px);
+        }
+
+        /* ── RESULT DISPLAY ── */
+        .result-wrap {
+            animation: fadeUp .45s ease;
+        }
+
+        .r-hero-img {
+            width: 100%;
+            border-radius: var(--r);
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            margin-bottom: 22px;
+            box-shadow: var(--shadow);
+        }
+
+        .r-hero-ph {
+            width: 100%;
+            border-radius: var(--r);
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, var(--cream), rgba(220, 240, 195, .4));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 56px;
+            margin-bottom: 22px;
+            color: var(--brown);
+        }
+
+        .r-title {
+            font-family: var(--ff-h);
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .r-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .r-section {
+            margin-bottom: 22px;
+        }
+
+        .r-section h3 {
+            font-family: var(--ff-h);
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--brown);
+            margin-bottom: 11px;
+        }
+
+        .ing-list {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .ing-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 13px;
+            background: var(--light);
+            border-radius: var(--r-sm);
+            font-size: 14px;
+        }
+
+        .ing-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--gold);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .steps-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .step-row {
+            display: flex;
+            gap: 13px;
+            padding: 13px;
+            background: var(--light);
+            border-radius: var(--r-sm);
+        }
+
+        .step-n {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--brown);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .step-t {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--dark);
+        }
+
+        .info-box {
+            padding: 14px 16px;
+            border-radius: var(--r-sm);
+            display: flex;
+            gap: 11px;
+            align-items: flex-start;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .ib-sage {
+            background: rgba(220, 240, 195, .35);
+            border: 1px solid rgba(155, 199, 122, .25);
+        }
+
+        .ib-gold {
+            background: rgba(221, 158, 89, .09);
+            border: 1px solid rgba(221, 158, 89, .18);
+        }
+
+        .ib-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .nut-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 9px;
+            margin-bottom: 18px;
+        }
+
+        .nut-card {
+            padding: 13px 8px;
+            background: var(--light);
+            border-radius: var(--r-sm);
+            text-align: center;
+        }
+
+        .nut-val {
+            font-family: var(--ff-h);
+            font-size: 19px;
+            font-weight: 800;
+            color: var(--brown);
+        }
+
+        .nut-lbl {
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 2px;
+        }
+
+        .chart-wrap {
+            height: 190px;
+            position: relative;
+        }
+
+        .time-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 9px;
+            margin-bottom: 18px;
+        }
+
+        /* ── RECIPE DETAIL MODAL ── */
+        .rdm {
+            max-width: 760px;
+            padding: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .rdm-hero {
+            width: 100%;
+            aspect-ratio: 21/9;
+            object-fit: cover;
+            display: block;
+        }
+
+        .rdm-hero-ph {
+            width: 100%;
+            aspect-ratio: 21/9;
+            background: linear-gradient(135deg, var(--cream), rgba(220, 240, 195, .4));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 72px;
+            color: var(--brown);
+        }
+
+        .rdm-body {
+            padding: 32px;
+        }
+
+        .comment-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 190px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+        }
+
+        .c-item {
+            display: flex;
+            gap: 9px;
+        }
+
+        .c-av {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--brown), var(--gold));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .c-bubble {
+            background: var(--light);
+            padding: 9px 13px;
+            border-radius: 0 11px 11px 11px;
+            flex: 1;
+        }
+
+        .c-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--brown);
+            margin-bottom: 2px;
+        }
+
+        .c-text {
+            font-size: 13px;
+            color: var(--dark);
+            line-height: 1.5;
+        }
+
+        .c-input-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .c-input-row input {
+            border-radius: 99px;
+            padding: 10px 16px;
+        }
+
+        .rec-list {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .rec-row {
+            display: flex;
+            gap: 10px;
+            padding: 11px;
+            background: rgba(220, 240, 195, .2);
+            border-radius: var(--r-sm);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        /* ── UPLOAD ZONE ── */
+        .upload-zone {
+            border: 2.5px dashed var(--border);
+            border-radius: var(--r);
+            padding: 56px 36px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--t);
+            background: var(--light);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-zone:hover,
+        .upload-zone.drag {
+            border-color: var(--gold);
+            background: rgba(240, 216, 161, .08);
+        }
+
+        .upload-zone input[type=file] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 14px;
+            color: var(--brown);
+        }
+
+        .upload-title {
+            font-family: var(--ff-h);
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 6px;
+        }
+
+        .upload-desc {
+            font-size: 13px;
+            color: #bbb;
+        }
+
+        #upload-preview {
+            width: 100%;
+            border-radius: var(--r);
+            margin-bottom: 14px;
+            max-height: 280px;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* ── COOKBOOK ── */
+        .cookbook-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+            gap: 18px;
+        }
+
+        .cc {
+            border-radius: 18px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all var(--t);
+            background: #fff;
+            box-shadow: 0 2px 12px rgba(164, 114, 81, .09);
+            border: 1px solid var(--border);
+        }
+
+        .cc:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .cc-img {
+            width: 100%;
+            aspect-ratio: 3/2;
+            object-fit: cover;
+            background: var(--light);
+            display: block;
+        }
+
+        .cc-img-ph {
+            width: 100%;
+            aspect-ratio: 3/2;
+            background: linear-gradient(135deg, var(--cream), rgba(220, 240, 195, .4));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: var(--brown);
+        }
+
+        .cc-body {
+            padding: 16px 18px;
+        }
+
+        .cc-title {
+            font-family: var(--ff-h);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+
+        .cc-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+            margin-top: 8px;
+        }
+
+        .cc-date {
+            font-size: 11px;
+            color: #ccc;
+        }
+
+        /* ── LOADING ── */
+        .loading-ov {
+            position: fixed;
+            inset: 0;
+            background: rgba(254, 252, 248, .88);
+            z-index: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        .spinner {
+            width: 44px;
+            height: 44px;
+            border: 3px solid var(--cream);
+            border-top-color: var(--brown);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .ld-text {
+            font-size: 15px;
+            color: var(--brown);
+            font-weight: 500;
+        }
+
+        .ld-sub {
+            font-size: 13px;
+            color: #bbb;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── EMPTY STATE ── */
+        .empty {
+            text-align: center;
+            padding: 72px 40px;
+        }
+
+        .empty-icon {
+            font-size: 52px;
+            margin-bottom: 14px;
+            color: var(--brown);
+        }
+
+        .empty-title {
+            font-family: var(--ff-h);
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 7px;
+        }
+
+        .empty-desc {
+            font-size: 14px;
+            color: #bbb;
+            margin-bottom: 22px;
+        }
+
+        /* ── RESPONSIVE ── */
+        @media(max-width:768px) {
+            nav {
+                padding: 0 18px;
+            }
+
+            .hero,
+            .section,
+            .feed-wrap {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+
+            .pg-header,
+            .pg-body,
+            .pg-body-wide {
+                padding: 0 20px;
+            }
+
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+
+            .feed-grid {
+                columns: 1;
+            }
+
+            .nut-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .cuisine-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .modal {
+                padding: 26px 22px;
+            }
+
+            .rdm-body {
+                padding: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav>
+        <a class="nav-logo" onclick="showPage('home')">
+            <div class="nav-logo-icon">N</div>
+            <div class="nav-logo-text">Nutri Chef <span>AI</span></div>
+        </a>
+        <div class="nav-actions" id="nav-center">
+            <button class="btn btn-ghost" onclick="showPage('home')">Home</button>
+            <button class="btn btn-ghost" onclick="showPage('community')">Community</button>
+        </div>
+        <div class="nav-actions" id="nav-right">
+            <button class="btn btn-outline" onclick="openModal('login-modal')">Log In</button>
+            <button class="btn btn-primary" onclick="openModal('signup-modal')">Sign Up</button>
+        </div>
+    </nav>
+
+    <!-- HOME -->
+    <div id="page-home">
+        <div class="hero">
+            <div class="hero-orb orb-1"></div>
+            <div class="hero-orb orb-2"></div>
+            <div class="hero-orb orb-3"></div>
+            <div class="hero-inner">
+                <div class="hero-badge">AI-Powered Culinary Intelligence</div>
+                <h1 class="hero-h1">Cook Smarter with<br /><em>Nutri Chef AI</em></h1>
+                <p class="hero-p">Transform any ingredients into gourmet recipes. Get instant nutrition analysis,
+                    connect with a community of food lovers, and discover your next favourite meal.</p>
+                <div class="hero-btns">
+                    <button class="btn btn-primary" style="padding:15px 30px;font-size:15px;"
+                        onclick="requireAuth(()=>showPage('ai-generator'))">Generate a Recipe</button>
+                    <button class="btn btn-outline" style="padding:15px 30px;font-size:15px;"
+                        onclick="showPage('community')">Explore Community</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <p class="section-eyebrow">Everything you need</p>
+            <h2 class="section-h2">Four ways to discover great food</h2>
+            <div class="feature-grid">
+                <div class="fc fc-ai" onclick="requireAuth(()=>showPage('ai-generator'))">
+                    <span class="fc-icon">&#x1F916;</span>
+                    <div class="fc-title">AI Recipe Generator</div>
+                    <p class="fc-desc">Type in ingredients you have and let our AI craft a perfect recipe with full
+                        nutrition data and beautiful plating ideas.</p>
+                    <span class="fc-cta">Try it now &rarr;</span>
+                </div>
+                <div class="fc fc-fridge" onclick="requireAuth(()=>showPage('fridge-mode'))">
+                    <span class="fc-icon">&#x1F4F7;</span>
+                    <div class="fc-title">Fridge Mode</div>
+                    <p class="fc-desc">Snap a photo of your fridge. Our vision AI detects ingredients automatically and
+                        generates a personalised recipe in seconds.</p>
+                    <span class="fc-cta" style="color:#3d6b33;">Scan now &rarr;</span>
+                </div>
+                <div class="fc fc-own" onclick="requireAuth(()=>showPage('user-own-recipe'))">
+                    <span class="fc-icon">&#x270D;&#xFE0F;</span>
+                    <div class="fc-title">Your Own Recipe</div>
+                    <p class="fc-desc">Save your hand-crafted recipes. We auto-fetch nutrition data, a cover image, and
+                        keep everything in your personal cookbook.</p>
+                    <span class="fc-cta">Write a recipe &rarr;</span>
+                </div>
+                <div class="fc fc-cook" onclick="requireAuth(()=>showPage('cookbook'))">
+                    <span class="fc-icon">&#x1F4D6;</span>
+                    <div class="fc-title">My Cookbook</div>
+                    <p class="fc-desc">All your generated and saved recipes in one beautiful, searchable personal
+                        collection available any time.</p>
+                    <span class="fc-cta" style="color:#8a7030;">View cookbook &rarr;</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="feed-wrap">
+            <p class="section-eyebrow">Community</p>
+            <h2 class="section-h2">What the community is cooking</h2>
+            <div class="feed-grid" id="home-feed">
+                <div class="empty">
+                    <div class="spinner" style="margin:0 auto;"></div>
+                </div>
+            </div>
+            <div style="text-align:center;margin-top:28px;">
+                <button class="btn btn-outline" style="padding:13px 28px;" onclick="showPage('community')">View All
+                    Community Recipes &rarr;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI GENERATOR PAGE -->
+    <div id="page-ai-generator" class="page hidden">
+        <div class="pg-header">
+            <button class="back-btn" onclick="showPage('home')">&larr; Back</button>
+            <h1>AI Recipe Generator</h1>
+            <p>Enter your ingredients and let AI create a personalised recipe with full nutrition analysis.</p>
+        </div>
+        <div class="pg-body" style="max-width:1100px;">
+            <div class="two-col">
+                <div class="card form-card">
+                    <div class="form-group">
+                        <label>Ingredients &mdash; <span style="font-weight:400;color:#bbb;">press Enter or comma to add
+                                each one</span></label>
+                        <div class="chip-wrap" id="chip-wrap" onclick="document.getElementById('chip-input').focus()">
+                            <input type="text" id="chip-input" placeholder="e.g. chicken breast" autocomplete="off" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Cuisine Style</label>
+                        <div class="cuisine-grid" id="cg-ai">
+                            <div class="c-opt sel" data-v="Italian">Italian</div>
+                            <div class="c-opt" data-v="Pakistani">Pakistani</div>
+                            <div class="c-opt" data-v="Mediterranean">Mediterranean</div>
+                            <div class="c-opt" data-v="Korean">Korean</div>
+                            <div class="c-opt" data-v="Mexican">Mexican</div>
+                            <div class="c-opt" data-v="American">American</div>
+                            <div class="c-opt" data-v="Chinese">Chinese</div>
+                            <div class="c-opt" data-v="Indian">Indian</div>
+                            <div class="c-opt" data-v="Japanese">Japanese</div>
+                        </div>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="toggle-row">
+                        <div>
+                            <div style="font-size:14px;font-weight:500;">Share with Community</div>
+                            <div style="font-size:12px;color:#bbb;margin-top:2px;">Post this recipe to the community
+                                feed</div>
+                        </div>
+                        <label class="toggle"><input type="checkbox" id="ai-comm" /><span class="tsl"></span></label>
+                    </div>
+                    <button class="btn btn-primary"
+                        style="width:100%;justify-content:center;padding:14px;font-size:15px;margin-top:10px;"
+                        onclick="generateAIRecipe()">Generate Recipe</button>
+                </div>
+                <div id="ai-result">
+                    <div class="empty">
+                        <div class="empty-icon">&#x1F373;</div>
+                        <div class="empty-title">Your recipe will appear here</div>
+                        <div class="empty-desc">Add ingredients and pick a cuisine to get started.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FRIDGE MODE PAGE -->
+    <div id="page-fridge-mode" class="page hidden">
+        <div class="pg-header">
+            <button class="back-btn" onclick="showPage('home')">&larr; Back</button>
+            <h1>Fridge Mode</h1>
+            <p>Upload a photo of your fridge or ingredients and let AI detect what you have and generate a recipe.</p>
+        </div>
+        <div class="pg-body" style="max-width:1100px;">
+            <div class="two-col">
+                <div class="card form-card">
+                    <div class="form-group">
+                        <label>Upload Photo</label>
+                        <div class="upload-zone" id="upload-zone"
+                            ondragover="event.preventDefault();this.classList.add('drag')"
+                            ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+                            <input type="file" id="fridge-img" accept="image/jpeg,image/png,image/webp"
+                                onchange="previewImg(this)" />
+                            <div id="upload-ph">
+                                <div class="upload-icon">&#x1F4F7;</div>
+                                <div class="upload-title">Drop your photo here</div>
+                                <div class="upload-desc">or click to browse &mdash; JPEG, PNG, WEBP supported</div>
+                            </div>
+                            <img id="upload-preview" class="hidden" alt="Preview" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Cuisine Style</label>
+                        <div class="cuisine-grid" id="cg-fridge">
+                            <div class="c-opt sel" data-v="Italian">Italian</div>
+                            <div class="c-opt" data-v="Pakistani">Pakistani</div>
+                            <div class="c-opt" data-v="Mediterranean">Mediterranean</div>
+                            <div class="c-opt" data-v="Korean">Korean</div>
+                            <div class="c-opt" data-v="Mexican">Mexican</div>
+                            <div class="c-opt" data-v="American">American</div>
+                            <div class="c-opt" data-v="Chinese">Chinese</div>
+                            <div class="c-opt" data-v="Indian">Indian</div>
+                            <div class="c-opt" data-v="Japanese">Japanese</div>
+                        </div>
+                    </div>
+                    <div class="divider"></div>
+                    <div class="toggle-row">
+                        <div>
+                            <div style="font-size:14px;font-weight:500;">Share with Community</div>
+                            <div style="font-size:12px;color:#bbb;margin-top:2px;">Post this recipe to the community
+                                feed</div>
+                        </div>
+                        <label class="toggle"><input type="checkbox" id="fridge-comm" /><span
+                                class="tsl"></span></label>
+                    </div>
+                    <button class="btn btn-gold"
+                        style="width:100%;justify-content:center;padding:14px;font-size:15px;margin-top:10px;"
+                        onclick="scanFridge()">Scan and Generate Recipe</button>
+                </div>
+                <div id="fridge-result">
+                    <div class="empty">
+                        <div class="empty-icon">&#x1F9CA;</div>
+                        <div class="empty-title">Upload a fridge photo</div>
+                        <div class="empty-desc">AI will detect your ingredients and generate a recipe.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- USER OWN RECIPE PAGE -->
+    <div id="page-user-own-recipe" class="page hidden">
+        <div class="pg-header">
+            <button class="back-btn" onclick="showPage('home')">&larr; Back</button>
+            <h1>Write Your Own Recipe</h1>
+            <p>Save your hand-crafted recipe. We will automatically fetch nutrition data and a cover image for you.</p>
+        </div>
+        <div class="pg-body">
+            <div class="card form-card" style="max-width:700px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div class="form-group" style="grid-column:1/-1;">
+                        <label>Recipe Title *</label>
+                        <input type="text" id="own-title" placeholder="e.g. Garlic Butter Chicken with Spinach" />
+                    </div>
+                    <div class="form-group">
+                        <label>Cuisine *</label>
+                        <input type="text" id="own-cuisine" placeholder="e.g. Mediterranean" />
+                    </div>
+                    <div class="form-group">
+                        <label>Difficulty</label>
+                        <select id="own-diff">
+                            <option>Easy</option>
+                            <option>Medium</option>
+                            <option>Hard</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Servings</label>
+                        <input type="number" id="own-servings" value="2" min="1" max="20" />
+                    </div>
+                    <div class="form-group">
+                        <label>Prep Time</label>
+                        <input type="text" id="own-prep" placeholder="10 min" />
+                    </div>
+                    <div class="form-group">
+                        <label>Cook Time</label>
+                        <input type="text" id="own-cook" placeholder="25 min" />
+                    </div>
+                    <div class="form-group">
+                        <label>Total Time</label>
+                        <input type="text" id="own-total" placeholder="35 min" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Ingredients * &mdash; <span style="font-weight:400;color:#bbb;">one per line with quantity,
+                            e.g. "300g chicken breast"</span></label>
+                    <textarea id="own-ings" rows="5"
+                        placeholder="300g chicken breast&#10;150g fresh spinach&#10;3 tablespoons butter&#10;4 cloves garlic&#10;1 lemon, juiced"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Steps * &mdash; <span style="font-weight:400;color:#bbb;">one step per line</span></label>
+                    <textarea id="own-steps" rows="5"
+                        placeholder="Step 1: Season the chicken with salt and pepper on both sides.&#10;Step 2: Melt butter in a pan over medium heat..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Why this works <span style="font-weight:400;color:#bbb;">(optional)</span></label>
+                    <textarea id="own-why" rows="2"
+                        placeholder="These flavours complement each other because..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Health Note <span style="font-weight:400;color:#bbb;">(optional)</span></label>
+                    <textarea id="own-health" rows="2" placeholder="Rich in protein and vitamins..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Chef Tip <span style="font-weight:400;color:#bbb;">(optional)</span></label>
+                    <textarea id="own-tip" rows="2"
+                        placeholder="For best results, let the chicken rest for 3 minutes after cooking..."></textarea>
+                </div>
+                <div class="divider"></div>
+                <div class="toggle-row">
+                    <div>
+                        <div style="font-size:14px;font-weight:500;">Share with Community</div>
+                        <div style="font-size:12px;color:#bbb;margin-top:2px;">Post this recipe to the community feed
+                        </div>
+                    </div>
+                    <label class="toggle"><input type="checkbox" id="own-comm" /><span class="tsl"></span></label>
+                </div>
+                <button class="btn btn-primary"
+                    style="width:100%;justify-content:center;padding:14px;font-size:15px;margin-top:10px;"
+                    onclick="saveOwnRecipe()">Save Recipe</button>
+            </div>
+            <div id="own-result" style="margin-top:28px;"></div>
+        </div>
+    </div>
+
+    <!-- COMMUNITY PAGE -->
+    <div id="page-community" class="page hidden">
+        <div class="pg-header">
+            <button class="back-btn" onclick="showPage('home')">&larr; Back</button>
+            <h1>Community Recipes</h1>
+            <p>Discover what food lovers around the world are cooking and sharing.</p>
+        </div>
+        <div class="pg-body-wide">
+            <div class="feed-grid" id="community-feed">
+                <div style="text-align:center;padding:60px;">
+                    <div class="spinner" style="margin:0 auto;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COOKBOOK PAGE -->
+    <div id="page-cookbook" class="page hidden">
+        <div class="pg-header">
+            <button class="back-btn" onclick="showPage('home')">&larr; Back</button>
+            <h1>My Cookbook</h1>
+            <p>All your saved and generated recipes in one personal collection.</p>
+        </div>
+        <div class="pg-body">
+            <div class="cookbook-grid" id="cookbook-grid">
+                <div style="text-align:center;padding:60px;grid-column:1/-1;">
+                    <div class="spinner" style="margin:0 auto;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIN MODAL -->
+    <div class="modal-overlay hidden" id="login-modal" onclick="bgClose(event,'login-modal')">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('login-modal')">&#x2715;</button>
+            <div class="modal-title">Welcome back</div>
+            <div class="modal-sub">Sign in to your Nutri Chef AI account</div>
+            <div class="form-group"><label>Username</label><input type="text" id="l-name" placeholder="Your username" />
+            </div>
+            <div class="form-group"><label>Password</label><input type="password" id="l-pass"
+                    placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()" /></div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;font-size:15px;"
+                onclick="doLogin()">Sign In</button>
+            <p style="text-align:center;margin-top:16px;font-size:13px;color:#bbb;">No account? <a href="#"
+                    style="color:var(--brown);font-weight:500;"
+                    onclick="closeModal('login-modal');openModal('signup-modal');return false;">Sign up free</a></p>
+        </div>
+    </div>
+
+    <!-- SIGNUP MODAL -->
+    <div class="modal-overlay hidden" id="signup-modal" onclick="bgClose(event,'signup-modal')">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('signup-modal')">&#x2715;</button>
+            <div class="modal-title">Join Nutri Chef AI</div>
+            <div class="modal-sub">Create your free account and start cooking smarter</div>
+            <div class="form-group"><label>Full Name</label><input type="text" id="s-name" placeholder="Your name" />
+            </div>
+            <div class="form-group"><label>Email</label><input type="email" id="s-email"
+                    placeholder="you@example.com" /></div>
+            <div class="form-group"><label>Password</label><input type="password" id="s-pass"
+                    placeholder="Min. 6 characters" onkeydown="if(event.key==='Enter')doSignup()" /></div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center;padding:13px;font-size:15px;"
+                onclick="doSignup()">Create Account</button>
+            <p style="text-align:center;margin-top:16px;font-size:13px;color:#bbb;">Already have an account? <a href="#"
+                    style="color:var(--brown);font-weight:500;"
+                    onclick="closeModal('signup-modal');openModal('login-modal');return false;">Sign in</a></p>
+        </div>
+    </div>
+
+    <!-- RECIPE DETAIL MODAL -->
+    <div class="modal-overlay hidden" id="recipe-modal" onclick="bgClose(event,'recipe-modal')">
+        <div class="modal rdm">
+            <button class="modal-close" style="top:12px;right:12px;background:rgba(0,0,0,.45);color:#fff;z-index:10;"
+                onclick="closeModal('recipe-modal')">&#x2715;</button>
+            <div id="recipe-modal-body"></div>
+        </div>
+    </div>
+
+    <!-- LOADING OVERLAY -->
+    <div class="loading-ov hidden" id="ld-overlay">
+        <div class="spinner"></div>
+        <div class="ld-text" id="ld-text">Processing...</div>
+        <div class="ld-sub" id="ld-sub">Please wait</div>
+    </div>
+
+    <!-- TOASTS -->
+    <div id="toast-container"></div>
+
+    <script>
+        /* ─────────────────────────────────────────────
+           CONFIGURATION
+        ───────────────────────────────────────────── */
+        const API = 'http://localhost:8000';
+        let token = localStorage.getItem('nc_token') || null;
+        let uName = localStorage.getItem('nc_user') || null;
+        let activeChartInst = null;
+
+        /* ─────────────────────────────────────────────
+           CHIP INPUT (ingredient tags)
+        ───────────────────────────────────────────── */
+        const chips = [];
+        const chipInput = document.getElementById('chip-input');
+
+        chipInput.addEventListener('keydown', e => {
+            if (['Enter', ','].includes(e.key)) {
+                e.preventDefault();
+                const v = chipInput.value.trim().replace(/,$/, '');
+                if (v) { chips.push(v); renderChips(); chipInput.value = ''; }
+            } else if (e.key === 'Backspace' && !chipInput.value && chips.length) {
+                chips.pop(); renderChips();
+            }
+        });
+
+        function renderChips() {
+            const wrap = document.getElementById('chip-wrap');
+            wrap.querySelectorAll('.chip').forEach(c => c.remove());
+            chips.forEach((c, i) => {
+                const el = document.createElement('div');
+                el.className = 'chip';
+                el.innerHTML = `${c}<button class="chip-x" onclick="chips.splice(${i},1);renderChips()">&#x00D7;</button>`;
+                wrap.insertBefore(el, chipInput);
+            });
+        }
+
+        /* ─────────────────────────────────────────────
+           CUISINE PICKER
+        ───────────────────────────────────────────── */
+        document.querySelectorAll('.cuisine-grid').forEach(g => {
+            g.querySelectorAll('.c-opt').forEach(o => {
+                o.addEventListener('click', () => {
+                    g.querySelectorAll('.c-opt').forEach(x => x.classList.remove('sel'));
+                    o.classList.add('sel');
+                });
+            });
+        });
+
+        function getCuisine(gridId) {
+            const el = document.querySelector(`#${gridId} .c-opt.sel`);
+            return el ? el.dataset.v : 'Italian';
+        }
+
+        /* ─────────────────────────────────────────────
+           AUTH
+        ───────────────────────────────────────────── */
+        function updateNav() {
+            const center = document.getElementById('nav-center');
+            const right = document.getElementById('nav-right');
+            if (token && uName) {
+                center.innerHTML = `
+      <button class="btn btn-ghost" onclick="showPage('home')">Home</button>
+      <button class="btn btn-ghost" onclick="showPage('community')">Community</button>
+      <button class="btn btn-ghost" onclick="showPage('cookbook')">Cookbook</button>`;
+                right.innerHTML = `
+      <div class="user-chip">
+        <div class="user-avatar">${uName[0].toUpperCase()}</div>
+        <span style="font-size:13px;font-weight:500;">${uName}</span>
+      </div>
+      <button class="btn btn-ghost" onclick="doLogout()">Log out</button>`;
+            } else {
+                center.innerHTML = `
+      <button class="btn btn-ghost" onclick="showPage('home')">Home</button>
+      <button class="btn btn-ghost" onclick="showPage('community')">Community</button>`;
+                right.innerHTML = `
+      <button class="btn btn-outline" onclick="openModal('login-modal')">Log In</button>
+      <button class="btn btn-primary" onclick="openModal('signup-modal')">Sign Up</button>`;
+            }
+        }
+
+        async function doLogin() {
+            const name = document.getElementById('l-name').value.trim();
+            const password = document.getElementById('l-pass').value;
+            if (!name || !password) { toast('Please fill in all fields', 'error'); return; }
+            showLD('Signing you in...');
+            try {
+                const r = await fetch(`${API}/User-Authentication/login`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, password })
+                });
+                const d = await r.json();
+                if (!r.ok) throw new Error(d.detail || 'Login failed');
+                token = d.access_token; uName = name;
+                localStorage.setItem('nc_token', token);
+                localStorage.setItem('nc_user', uName);
+                updateNav(); closeModal('login-modal');
+                toast(`Welcome back, ${uName}!`, 'success');
+            } catch (e) { toast(e.message, 'error'); } finally { hideLD(); }
+        }
+
+        async function doSignup() {
+            const name = document.getElementById('s-name').value.trim();
+            const email = document.getElementById('s-email').value.trim();
+            const password = document.getElementById('s-pass').value;
+            if (!name || !email || !password) { toast('Please fill in all fields', 'error'); return; }
+            showLD('Creating your account...');
+            try {
+                const r = await fetch(`${API}/User-Authentication/register`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const d = await r.json();
+                if (!r.ok) throw new Error(d.detail || 'Registration failed');
+                closeModal('signup-modal');
+                toast('Account created! Please log in.', 'success');
+                openModal('login-modal');
+                document.getElementById('l-name').value = name;
+            } catch (e) { toast(e.message, 'error'); } finally { hideLD(); }
+        }
+
+        async function doLogout() {
+            if (token) {
+                try {
+                    await fetch(`${API}/User-Authentication/logout`, {
+                        method: 'POST', headers: { 'session-token': token }
+                    });
+                } catch (_) { }
+            }
+            token = null; uName = null;
+            localStorage.removeItem('nc_token');
+            localStorage.removeItem('nc_user');
+            updateNav(); showPage('home');
+            toast('Logged out successfully', 'info');
+        }
+
+        function authH() { return { 'Content-Type': 'application/json', 'session-token': token }; }
+        function requireAuth(cb) {
+            if (!token) { toast('Please log in first', 'info'); openModal('login-modal'); return; }
+            cb();
+        }
+
+        /* ─────────────────────────────────────────────
+           PAGE ROUTER
+        ───────────────────────────────────────────── */
+        function showPage(id) {
+            document.querySelectorAll('[id^="page-"]').forEach(p => p.classList.add('hidden'));
+            document.getElementById(`page-${id}`).classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (id === 'community') loadCommunityFeed();
+            if (id === 'cookbook') loadCookbook();
+        }
+
+        /* ─────────────────────────────────────────────
+           AI RECIPE GENERATOR
+        ───────────────────────────────────────────── */
+        async function generateAIRecipe() {
+            requireAuth(async () => {
+                if (!chips.length) { toast('Add at least one ingredient', 'error'); return; }
+                const cuisine = getCuisine('cg-ai');
+                const is_for_community = document.getElementById('ai-comm').checked;
+                showLD('Crafting your recipe with AI...', 'Analysing ingredients and nutrition data');
+                try {
+                    const r = await fetch(`${API}/AI-Recipe-Generator/recipe_generator`, {
+                        method: 'POST', headers: authH(),
+                        body: JSON.stringify({ ingredients: chips, cuisine, is_for_community })
+                    });
+                    const d = await r.json();
+                    if (!r.ok) throw new Error(d.detail || 'Generation failed');
+                    renderRecipeResult('ai-result', d);
+                    toast(is_for_community ? 'Recipe generated and shared to community!' : 'Recipe generated successfully!', 'success');
+                } catch (e) { toast(e.message, 'error'); } finally { hideLD(); }
+            });
+        }
+
+        /* ─────────────────────────────────────────────
+           FRIDGE MODE
+        ───────────────────────────────────────────── */
+        function previewImg(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                const prev = document.getElementById('upload-preview');
+                document.getElementById('upload-ph').style.display = 'none';
+                prev.src = e.target.result;
+                prev.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            document.getElementById('upload-zone').classList.remove('drag');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                document.getElementById('fridge-img').files = e.dataTransfer.files;
+                previewImg({ files: [file] });
+            }
+        }
+
+        async function scanFridge() {
+            requireAuth(async () => {
+                const fileInput = document.getElementById('fridge-img');
+                if (!fileInput.files[0]) { toast('Please upload an image first', 'error'); return; }
+                const cuisine = getCuisine('cg-fridge');
+                const is_for_community = document.getElementById('fridge-comm').checked;
+                showLD('Scanning your fridge...', 'Detecting ingredients with computer vision');
+                try {
+                    const fd = new FormData();
+                    fd.append('image', fileInput.files[0]);
+                    fd.append('cuisine', cuisine);
+                    fd.append('is_for_community', is_for_community);
+                    const r = await fetch(`${API}/Fridge-Mode/scan-and-cook`, {
+                        method: 'POST', headers: { 'session-token': token }, body: fd
+                    });
+                    const d = await r.json();
+                    if (!r.ok) throw new Error(d.detail || 'Scan failed');
+                    // Show detected ingredients first
+                    const detected = `<div class="card" style="padding:18px;margin-bottom:18px;">
+        <h3 style="font-family:var(--ff-h);font-size:14px;color:var(--brown);margin-bottom:11px;">Detected Ingredients</h3>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;">
+          ${(d.detected_ingredients || []).map(i => `<span class="tag tag-sage">${i}</span>`).join('')}
+        </div></div>`;
+                    document.getElementById('fridge-result').innerHTML = detected;
+                    renderRecipeResult('fridge-result', d, true);
+                    toast('Fridge scanned and recipe generated!', 'success');
+                } catch (e) { toast(e.message, 'error'); } finally { hideLD(); }
+            });
+        }
+
+        /* ─────────────────────────────────────────────
+           USER OWN RECIPE
+        ───────────────────────────────────────────── */
+        async function saveOwnRecipe() {
+            requireAuth(async () => {
+                const title = document.getElementById('own-title').value.trim();
+                const cuisine = document.getElementById('own-cuisine').value.trim();
+                const difficulty = document.getElementById('own-diff').value;
+                const servings = parseInt(document.getElementById('own-servings').value) || 2;
+                const prep = document.getElementById('own-prep').value.trim() || 'N/A';
+                const cook = document.getElementById('own-cook').value.trim() || 'N/A';
+                const total = document.getElementById('own-total').value.trim() || 'N/A';
+                const ingRaw = document.getElementById('own-ings').value.trim();
+                const stepsRaw = document.getElementById('own-steps').value.trim();
+                if (!title || !cuisine || !ingRaw || !stepsRaw) {
+                    toast('Title, Cuisine, Ingredients and Steps are required', 'error'); return;
+                }
+                const ingredients = ingRaw.split('\n').map(s => s.trim()).filter(Boolean);
+                const steps = stepsRaw.split('\n').map(s => s.trim()).filter(Boolean);
+                const is_for_community = document.getElementById('own-comm').checked;
+                showLD('Saving your recipe...', 'Fetching nutrition data and cover image');
+                try {
+                    const r = await fetch(`${API}/User-Recipe/save`, {
+                        method: 'POST', headers: authH(),
+                        body: JSON.stringify({
+                            title, cuisine, difficulty, servings,
+                            time: { prep, cook, total },
+                            ingredients, steps,
+                            why: document.getElementById('own-why').value.trim() || null,
+                            health_note: document.getElementById('own-health').value.trim() || null,
+                            chef_tip: document.getElementById('own-tip').value.trim() || null,
+                            message: null, is_for_community
+                        })
+                    });
+                    const d = await r.json();
+                    if (!r.ok) throw new Error(d.detail || 'Save failed');
+                    renderRecipeResult('own-result', d);
+                    toast('Recipe saved successfully!', 'success');
+                } catch (e) { toast(e.message, 'error'); } finally { hideLD(); }
+            });
+        }
+
+        /* ─────────────────────────────────────────────
+           RENDER RECIPE RESULT (shared by all 3 generators)
+        ───────────────────────────────────────────── */
+        function renderRecipeResult(containerId, d, append = false) {
+            const recipe = d.recipe || {};
+            const steps = recipe.steps || [];
+            const ingDisplay = recipe.ingredients || (d.ingredients || []).map(i => `${i.grams}g ${i.name}`);
+            const nut = d.recipe_nutrition || {};
+            const totals = nut.totals || {};
+            const s = recipe.servings || 1;
+            const title = d.recipe_title || recipe.title || 'Your Recipe';
+            const chartId = 'chart-' + Date.now();
+
+            const html = `<div class="result-wrap">
+    ${d.recipe_image_url
+                    ? `<img src="${d.recipe_image_url}" class="r-hero-img" alt="${title}"
+            onerror="this.style.display='none';this.nextSibling.style.display='flex'"/>
+         <div class="r-hero-ph" style="display:none;">&#x1F37D;</div>`
+                    : `<div class="r-hero-ph">&#x1F37D;</div>`}
+
+    <h2 class="r-title">${title}</h2>
+    <div class="r-meta">
+      <span class="tag tag-brown">${d.cuisine || recipe.cuisine || ''}</span>
+      ${recipe.difficulty ? `<span class="tag tag-gold">${recipe.difficulty}</span>` : ''}
+      ${recipe.servings ? `<span class="tag tag-sage">${recipe.servings} servings</span>` : ''}
+      ${recipe.time?.total ? `<span class="tag" style="background:var(--light);color:var(--mid);">${recipe.time.total}</span>` : ''}
+    </div>
+
+    ${recipe.time ? `<div class="time-grid">
+      <div class="nut-card"><div class="nut-val" style="font-size:15px;">${recipe.time.prep}</div><div class="nut-lbl">Prep</div></div>
+      <div class="nut-card"><div class="nut-val" style="font-size:15px;">${recipe.time.cook}</div><div class="nut-lbl">Cook</div></div>
+      <div class="nut-card"><div class="nut-val" style="font-size:15px;">${recipe.time.total}</div><div class="nut-lbl">Total</div></div>
+    </div>` : ''}
+
+    ${recipe.why ? `<div class="info-box ib-gold" style="margin-bottom:18px;">
+      <span class="ib-icon">&#x1F4A1;</span><span>${recipe.why}</span></div>` : ''}
+
+    <div class="r-section">
+      <h3>Ingredients</h3>
+      <div class="ing-list">
+        ${ingDisplay.map(i => `<div class="ing-row"><div class="ing-dot"></div>${i}</div>`).join('')}
+      </div>
+    </div>
+
+    ${steps.length ? `<div class="r-section">
+      <h3>Instructions</h3>
+      <div class="steps-list">
+        ${steps.map((s, i) => `<div class="step-row">
+          <div class="step-n">${i + 1}</div>
+          <div class="step-t">${s.replace(/^Step\s*\d+:\s*/i, '')}</div>
+        </div>`).join('')}
+      </div>
+    </div>` : ''}
+
+    ${Object.keys(totals).length ? `<div class="r-section">
+      <h3>Nutrition per Serving</h3>
+      <div class="nut-grid">
+        <div class="nut-card"><div class="nut-val">${fmt(totals.calories, s)}</div><div class="nut-lbl">kcal</div></div>
+        <div class="nut-card"><div class="nut-val">${fmt(totals.protein, s)}g</div><div class="nut-lbl">Protein</div></div>
+        <div class="nut-card"><div class="nut-val">${fmt(totals.carbs, s)}g</div><div class="nut-lbl">Carbs</div></div>
+        <div class="nut-card"><div class="nut-val">${fmt(totals.fat, s)}g</div><div class="nut-lbl">Fat</div></div>
+        <div class="nut-card"><div class="nut-val">${fmt(totals.fiber, s)}g</div><div class="nut-lbl">Fiber</div></div>
+      </div>
+      <div class="chart-wrap"><canvas id="${chartId}"></canvas></div>
+    </div>` : ''}
+
+    ${recipe.health_note ? `<div class="info-box ib-sage" style="margin-bottom:10px;">
+      <span class="ib-icon">&#x1F49A;</span><span>${recipe.health_note}</span></div>` : ''}
+    ${recipe.chef_tip ? `<div class="info-box ib-gold">
+      <span class="ib-icon">&#x1F468;&#x200D;&#x1F373;</span><span>${recipe.chef_tip}</span></div>` : ''}
+  </div>`;
+
+            const container = document.getElementById(containerId);
+            if (append) container.innerHTML += html;
+            else container.innerHTML = html;
+
+            // Draw nutrition chart
+            const canvas = document.getElementById(chartId);
+            if (canvas && Object.keys(totals).length) {
+                if (activeChartInst) { try { activeChartInst.destroy(); } catch (_) { } }
+                activeChartInst = new Chart(canvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Protein', 'Carbs', 'Fat', 'Fiber'],
+                        datasets: [{
+                            data: [fmt(totals.protein, s), fmt(totals.carbs, s), fmt(totals.fat, s), fmt(totals.fiber, s)],
+                            backgroundColor: ['#A47251', '#DD9E59', '#F0D8A1', '#DCF0C3'],
+                            borderWidth: 0, hoverOffset: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { position: 'right', labels: { font: { family: 'DM Sans', size: 12 }, padding: 12 } } }
+                    }
+                });
+            }
+        }
+
+        function fmt(val, servings) { return Math.round((val || 0) / (servings || 1)); }
+
+        /* ─────────────────────────────────────────────
+           COMMUNITY FEED
+        ───────────────────────────────────────────── */
+        async function loadCommunityFeed() {
+            const headers = token ? { 'session-token': token } : {};
+            try {
+                const r = await fetch(`${API}/Community/feed`, { headers });
+                if (!r.ok) throw new Error();
+                const data = await r.json();
+                renderFeed('community-feed', data);
+                renderFeed('home-feed', data.slice(0, 6));
+            } catch (_) {
+                const msg = '<div class="empty"><div class="empty-icon">&#x1F37D;</div><div class="empty-title">No recipes yet</div><div class="empty-desc">Be the first to share a recipe!</div></div>';
+                document.getElementById('community-feed').innerHTML = msg;
+                document.getElementById('home-feed').innerHTML = msg;
+            }
+        }
+
+        function renderFeed(containerId, recipes) {
+            const el = document.getElementById(containerId);
+            if (!recipes || !recipes.length) {
+                el.innerHTML = '<div class="empty"><div class="empty-icon">&#x1F37D;</div><div class="empty-title">Nothing here yet</div><div class="empty-desc">Be the first to share!</div></div>';
+                return;
+            }
+            el.innerHTML = recipes.map(r => buildCard(r)).join('');
+        }
+
+        function buildCard(r) {
+            const recipe = r.recipe || {};
+            const title = recipe.title || (r.cuisine + ' Recipe');
+            const init = (r.user_name || 'U')[0].toUpperCase();
+            return `<div class="recipe-card" onclick="openDetail(${r.community_recipe_id})">
+    ${r.recipe_image_url
+                    ? `<img src="${r.recipe_image_url}" class="rc-img" alt="${title}" loading="lazy"
+              onerror="this.style.display='none';this.nextSibling.style.display='flex'"/>
+         <div class="rc-img-ph" style="display:none;">&#x1F37D;</div>`
+                    : `<div class="rc-img-ph">&#x1F37D;</div>`}
+    <div class="rc-body">
+      <div class="rc-user-row">
+        <div class="rc-av">${init}</div>
+        <div>
+          <div class="rc-name">${r.user_name || 'Chef'}</div>
+          <div class="rc-time">${timeAgo(r.created_at)}</div>
+        </div>
+      </div>
+      <div class="rc-title">${title}</div>
+      <div style="margin-bottom:8px;"><span class="tag tag-brown">${r.cuisine}</span></div>
+      <div class="rc-actions" onclick="event.stopPropagation()">
+        <button class="act-btn" id="like-${r.community_recipe_id}"
+          onclick="toggleLike(${r.community_recipe_id},this)">
+          &#x2665; <span>${r.likes_count || 0}</span>
+        </button>
+        <button class="act-btn" onclick="openDetail(${r.community_recipe_id})">
+          &#x1F4AC; <span>${(r.comments || []).length}</span>
+        </button>
+        <button class="act-btn" onclick="openDetail(${r.community_recipe_id})">View Recipe</button>
+      </div>
+    </div>
+  </div>`;
+        }
+
+        /* ─────────────────────────────────────────────
+           RECIPE DETAIL MODAL
+        ───────────────────────────────────────────── */
+        async function openDetail(id) {
+            if (!token) { toast('Please log in to view full recipes', 'info'); openModal('login-modal'); return; }
+            showLD('Loading recipe...');
+            try {
+                const r = await fetch(`${API}/Community/recipe/${id}`, { headers: { 'session-token': token } });
+                const d = await r.json();
+                if (!r.ok) throw new Error(d.detail || 'Not found');
+                buildDetailModal(d);
+                openModal('recipe-modal');
+            } catch (e) { toast(e.message, 'error'); } finally { hideLD(); }
+        }
+
+        function buildDetailModal(d) {
+            const recipe = d.recipe || {};
+            const steps = recipe.steps || [];
+            const nut = d.recipe_nutrition || {};
+            const totals = nut.totals || {};
+            const s = recipe.servings || 1;
+            const title = recipe.title || (d.cuisine + ' Recipe');
+            const ingDisplay = recipe.ingredients || (d.ingredients || []).map(i => `${i.grams}g ${i.name}`);
+            const comments = d.comments || [];
+            const recs = d.recommendations || [];
+
+            document.getElementById('recipe-modal-body').innerHTML = `
+    ${d.recipe_image_url
+                    ? `<img src="${d.recipe_image_url}" class="rdm-hero" alt="${title}"
+              onerror="this.style.display='none';this.nextSibling.style.display='flex'"/>
+         <div class="rdm-hero-ph" style="display:none;">&#x1F37D;</div>`
+                    : `<div class="rdm-hero-ph">&#x1F37D;</div>`}
+    <div class="rdm-body">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px;">
+        <div>
+          <h2 style="font-family:var(--ff-h);font-size:24px;font-weight:800;color:var(--dark);margin-bottom:9px;">${title}</h2>
+          <div style="display:flex;gap:7px;flex-wrap:wrap;">
+            <span class="tag tag-brown">${d.cuisine}</span>
+            ${recipe.difficulty ? `<span class="tag tag-gold">${recipe.difficulty}</span>` : ''}
+            ${recipe.servings ? `<span class="tag tag-sage">${recipe.servings} servings</span>` : ''}
+            ${recipe.time?.total ? `<span class="tag" style="background:var(--light);color:var(--mid);">${recipe.time.total}</span>` : ''}
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;">
+          <div class="rc-av" style="width:36px;height:36px;font-size:14px;">${(d.user_name || 'U')[0].toUpperCase()}</div>
+          <div><div style="font-size:13px;font-weight:600;">${d.user_name}</div>
+          <div style="font-size:11px;color:#bbb;">${timeAgo(d.created_at)}</div></div>
+        </div>
+      </div>
+
+      ${recipe.why ? `<div class="info-box ib-gold" style="margin-bottom:18px;">
+        <span class="ib-icon">&#x1F4A1;</span><span style="font-size:14px;">${recipe.why}</span></div>` : ''}
+
+      <div class="r-section">
+        <h3>Ingredients</h3>
+        <div class="ing-list">
+          ${ingDisplay.map(i => `<div class="ing-row"><div class="ing-dot"></div>${i}</div>`).join('')}
+        </div>
+      </div>
+
+      ${steps.length ? `<div class="r-section">
+        <h3>Instructions</h3>
+        <div class="steps-list">
+          ${steps.map((st, i) => `<div class="step-row">
+            <div class="step-n">${i + 1}</div>
+            <div class="step-t">${st.replace(/^Step\s*\d+:\s*/i, '')}</div>
+          </div>`).join('')}
+        </div>
+      </div>` : ''}
+
+      ${Object.keys(totals).length ? `<div class="r-section">
+        <h3>Nutrition per Serving</h3>
+        <div class="nut-grid">
+          <div class="nut-card"><div class="nut-val">${fmt(totals.calories, s)}</div><div class="nut-lbl">kcal</div></div>
+          <div class="nut-card"><div class="nut-val">${fmt(totals.protein, s)}g</div><div class="nut-lbl">Protein</div></div>
+          <div class="nut-card"><div class="nut-val">${fmt(totals.carbs, s)}g</div><div class="nut-lbl">Carbs</div></div>
+          <div class="nut-card"><div class="nut-val">${fmt(totals.fat, s)}g</div><div class="nut-lbl">Fat</div></div>
+          <div class="nut-card"><div class="nut-val">${fmt(totals.fiber, s)}g</div><div class="nut-lbl">Fiber</div></div>
+        </div>
+        <div class="chart-wrap"><canvas id="modal-chart"></canvas></div>
+      </div>` : ''}
+
+      ${recipe.health_note ? `<div class="info-box ib-sage" style="margin-bottom:10px;">
+        <span class="ib-icon">&#x1F49A;</span><span style="font-size:14px;">${recipe.health_note}</span></div>` : ''}
+      ${recipe.chef_tip ? `<div class="info-box ib-gold" style="margin-bottom:20px;">
+        <span class="ib-icon">&#x1F468;&#x200D;&#x1F373;</span><span style="font-size:14px;">${recipe.chef_tip}</span></div>` : ''}
+
+      <div class="divider"></div>
+
+      <!-- Like bar -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <button class="act-btn" style="font-size:14px;padding:9px 16px;border:1.5px solid var(--border);border-radius:99px;"
+          onclick="toggleLike(${d.community_recipe_id},this)">
+          &#x2665; <span id="modal-likes">${d.likes_count || 0} likes</span>
+        </button>
+      </div>
+
+      <!-- Comments -->
+      <div class="r-section">
+        <h3>Comments (${comments.length})</h3>
+        <div class="comment-list" id="modal-comments">
+          ${comments.length
+                    ? comments.map(c => `<div class="c-item">
+                <div class="c-av">${(c.user_name || 'U')[0].toUpperCase()}</div>
+                <div class="c-bubble"><div class="c-name">${c.user_name}</div>
+                <div class="c-text">${c.comment}</div></div>
+              </div>`).join('')
+                    : `<p style="text-align:center;padding:18px;color:#bbb;font-size:13px;">No comments yet. Be the first!</p>`}
+        </div>
+        <div class="c-input-row">
+          <input type="text" id="c-input" placeholder="Write a comment..."
+            onkeydown="if(event.key==='Enter')postComment(${d.community_recipe_id})"/>
+          <button class="btn btn-primary" style="padding:9px 16px;white-space:nowrap;"
+            onclick="postComment(${d.community_recipe_id})">Post</button>
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      <div class="r-section">
+        <h3>Chef Tips and Recommendations (${recs.length})</h3>
+        <div class="rec-list" id="modal-recs">
+          ${recs.length
+                    ? recs.map(r => `<div class="rec-row">
+                <span style="color:var(--brown);font-size:16px;">&#x2713;</span>
+                <div><strong style="font-size:12px;color:var(--brown);">${r.user_name}</strong>
+                <br/>${r.recommendation}</div>
+              </div>`).join('')
+                    : `<p style="text-align:center;padding:16px;color:#bbb;font-size:13px;">No tips yet. Share yours!</p>`}
+        </div>
+        <div class="c-input-row" style="margin-top:11px;">
+          <input type="text" id="rec-input" placeholder="Share a tip or substitution..."
+            onkeydown="if(event.key==='Enter')postRec(${d.community_recipe_id})"/>
+          <button class="btn btn-gold" style="padding:9px 16px;white-space:nowrap;"
+            onclick="postRec(${d.community_recipe_id})">Add</button>
+        </div>
+      </div>
+    </div>`;
+
+            setTimeout(() => {
+                const canvas = document.getElementById('modal-chart');
+                if (canvas && Object.keys(totals).length) {
+                    new Chart(canvas, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Protein', 'Carbs', 'Fat', 'Fiber'],
+                            datasets: [{
+                                data: [fmt(totals.protein, s), fmt(totals.carbs, s), fmt(totals.fat, s), fmt(totals.fiber, s)],
+                                backgroundColor: ['#A47251', '#DD9E59', '#F0D8A1', '#DCF0C3'],
+                                borderWidth: 0, hoverOffset: 5
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { position: 'right', labels: { font: { family: 'DM Sans', size: 12 }, padding: 12 } } }
+                        }
+                    });
+                }
+            }, 80);
+        }
+
+        /* ─────────────────────────────────────────────
+           SOCIAL ACTIONS
+        ───────────────────────────────────────────── */
+        async function toggleLike(id, btn) {
+            if (!token) { toast('Please log in to like recipes', 'info'); openModal('login-modal'); return; }
+            try {
+                const r = await fetch(`${API}/Community/recipe/${id}/like`, {
+                    method: 'POST', headers: { 'session-token': token }
+                });
+                const d = await r.json();
+                if (!r.ok) throw new Error(d.detail);
+                btn.classList.toggle('liked');
+                const span = btn.querySelector('span');
+                if (span) span.textContent = d.likes_count;
+                const ml = document.getElementById('modal-likes');
+                if (ml) ml.textContent = `${d.likes_count} likes`;
+                // Update feed card like count too
+                const feedBtn = document.getElementById(`like-${id}`);
+                if (feedBtn && feedBtn !== btn) {
+                    const fs = feedBtn.querySelector('span');
+                    if (fs) fs.textContent = d.likes_count;
+                }
+            } catch (e) { toast(e.message, 'error'); }
+        }
+
+        async function postComment(recipeId) {
+            if (!token) { toast('Please log in to comment', 'info'); return; }
+            const input = document.getElementById('c-input');
+            const text = input.value.trim();
+            if (!text) return;
+            try {
+                const r = await fetch(`${API}/Community/recipe/${recipeId}/comment`, {
+                    method: 'POST', headers: authH(), body: JSON.stringify({ comment: text })
+                });
+                const d = await r.json();
+                if (!r.ok) throw new Error(d.detail);
+                const list = document.getElementById('modal-comments');
+                const el = document.createElement('div');
+                el.className = 'c-item';
+                el.innerHTML = `<div class="c-av">${(uName || 'U')[0].toUpperCase()}</div>
+      <div class="c-bubble"><div class="c-name">${uName}</div>
+      <div class="c-text">${text}</div></div>`;
+                if (list.querySelector('p')) list.innerHTML = '';
+                list.appendChild(el);
+                input.value = '';
+                toast('Comment posted!', 'success');
+            } catch (e) { toast(e.message, 'error'); }
+        }
+
+        async function postRec(recipeId) {
+            if (!token) { toast('Please log in to add tips', 'info'); return; }
+            const input = document.getElementById('rec-input');
+            const text = input.value.trim();
+            if (!text) return;
+            try {
+                const r = await fetch(`${API}/Community/recipe/${recipeId}/recommendation`, {
+                    method: 'POST', headers: authH(), body: JSON.stringify({ recommendation: text })
+                });
+                const d = await r.json();
+                if (!r.ok) throw new Error(d.detail);
+                const list = document.getElementById('modal-recs');
+                const el = document.createElement('div');
+                el.className = 'rec-row';
+                el.innerHTML = `<span style="color:var(--brown);font-size:16px;">&#x2713;</span>
+      <div><strong style="font-size:12px;color:var(--brown);">${uName}</strong>
+      <br/>${text}</div>`;
+                if (list.querySelector('p')) list.innerHTML = '';
+                list.appendChild(el);
+                input.value = '';
+                toast('Tip added!', 'success');
+            } catch (e) { toast(e.message, 'error'); }
+        }
+
+        /* ─────────────────────────────────────────────
+           COOKBOOK
+        ───────────────────────────────────────────── */
+        async function loadCookbook() {
+            const grid = document.getElementById('cookbook-grid');
+            if (!token) {
+                grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
+      <div class="empty-icon">&#x1F512;</div>
+      <div class="empty-title">Sign in to view your cookbook</div>
+      <button class="btn btn-primary" style="margin-top:8px;" onclick="openModal('login-modal')">Sign In</button>
+    </div>`;
+                return;
+            }
+            grid.innerHTML = `<div style="text-align:center;padding:60px;grid-column:1/-1;"><div class="spinner" style="margin:0 auto;"></div></div>`;
+            try {
+                const r = await fetch(`${API}/User-Recipes/my_recipes`, { headers: { 'session-token': token } });
+                const data = await r.json();
+                if (!r.ok) throw new Error(data.detail);
+                if (!data.length) {
+                    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;">
+        <div class="empty-icon">&#x1F4D6;</div>
+        <div class="empty-title">Your cookbook is empty</div>
+        <div class="empty-desc">Generate or save your first recipe to get started.</div>
+        <button class="btn btn-primary" onclick="showPage('ai-generator')">Generate a Recipe</button>
+      </div>`;
+                    return;
+                }
+                grid.innerHTML = data.map(r => {
+                    const recipe = r.recipe || {};
+                    const title = r.recipe_title || recipe.title || (r.cuisine + ' Recipe');
+                    const kcal = ((r.recipe_nutrition || {}).totals || {}).calories;
+                    const perServing = kcal ? fmt(kcal, recipe.servings || 1) : null;
+                    const date = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+                    return `<div class="card cc" onclick='openCookbookDetail(${JSON.stringify(r).replace(/'/g, "&#39;")})'>
+        ${r.recipe_image_url
+                            ? `<img src="${r.recipe_image_url}" class="cc-img" alt="${title}"
+                  onerror="this.style.display='none';this.nextSibling.style.display='flex'"/>
+             <div class="cc-img-ph" style="display:none;">&#x1F37D;</div>`
+                            : `<div class="cc-img-ph">&#x1F37D;</div>`}
+        <div class="cc-body">
+          <div class="cc-title">${title}</div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:6px;">
+            <span class="tag tag-brown">${r.cuisine}</span>
+            ${recipe.difficulty ? `<span class="tag tag-gold">${recipe.difficulty}</span>` : ''}
+            ${r.is_for_community ? `<span class="tag tag-sage">Community</span>` : ''}
+          </div>
+          <div class="cc-foot">
+            <span class="cc-date">${date}</span>
+            ${perServing ? `<span class="tag" style="background:rgba(220,240,195,.3);color:#3d6b33;font-size:11px;">${perServing} kcal</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+                }).join('');
+            } catch (e) { toast(e.message, 'error'); }
+        }
+
+        function openCookbookDetail(r) {
+            const recipe = r.recipe || {};
+            const steps = recipe.steps || [];
+            const nut = r.recipe_nutrition || {};
+            const totals = nut.totals || {};
+            const s = recipe.servings || 1;
+            const title = r.recipe_title || recipe.title || 'Recipe';
+            const ingDisplay = recipe.ingredients || (r.ingredients || []).map(i => `${i.grams}g ${i.name}`);
+
+            document.getElementById('recipe-modal-body').innerHTML = `
+    ${r.recipe_image_url
+                    ? `<img src="${r.recipe_image_url}" class="rdm-hero" alt="${title}"
+              onerror="this.style.display='none';this.nextSibling.style.display='flex'"/>
+         <div class="rdm-hero-ph" style="display:none;">&#x1F37D;</div>`
+                    : `<div class="rdm-hero-ph">&#x1F37D;</div>`}
+    <div class="rdm-body">
+      <h2 style="font-family:var(--ff-h);font-size:24px;font-weight:800;color:var(--dark);margin-bottom:10px;">${title}</h2>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px;">
+        <span class="tag tag-brown">${r.cuisine}</span>
+        ${recipe.difficulty ? `<span class="tag tag-gold">${recipe.difficulty}</span>` : ''}
+        ${recipe.servings ? `<span class="tag tag-sage">${recipe.servings} servings</span>` : ''}
+        ${recipe.time?.total ? `<span class="tag" style="background:var(--light);color:var(--mid);">${recipe.time.total}</span>` : ''}
+      </div>
+      ${recipe.why ? `<div class="info-box ib-gold" style="margin-bottom:18px;">
+        <span class="ib-icon">&#x1F4A1;</span><span style="font-size:14px;">${recipe.why}</span></div>` : ''}
+      <div class="r-section">
+        <h3>Ingredients</h3>
+        <div class="ing-list">${ingDisplay.map(i => `<div class="ing-row"><div class="ing-dot"></div>${i}</div>`).join('')}</div>
+      </div>
+      ${steps.length ? `<div class="r-section"><h3>Instructions</h3><div class="steps-list">
+        ${steps.map((st, i) => `<div class="step-row"><div class="step-n">${i + 1}</div>
+        <div class="step-t">${st.replace(/^Step\s*\d+:\s*/i, '')}</div></div>`).join('')}
+      </div></div>` : ''}
+      ${Object.keys(totals).length ? `<div class="r-section">
+        <h3>Nutrition per Serving</h3>
+        <div class="nut-grid">
+          <div class="nut-card"><div class="nut-val">${fmt(totals.calories, s)}</div><div class="nut-lbl">kcal</div></div>
+          <div class="nut-card"><div class="nut-val">${fmt(totals.protein, s)}g</div><div class="nut-lbl">Protein</div></div>
+          <div class="nut-card"><div class="nut-val">${fmt(totals.carbs, s)}g</div><div class="nut-lbl">Carbs</div></div>
+          <div class="nut-card"><div class="nut-val">${fmt(totals.fat, s)}g</div><div class="nut-lbl">Fat</div></div>
+          <div class="nut-card"><div class="nut-val">${fmt(totals.fiber, s)}g</div><div class="nut-lbl">Fiber</div></div>
+        </div>
+        <div class="chart-wrap"><canvas id="cb-chart"></canvas></div>
+      </div>` : ''}
+      ${recipe.health_note ? `<div class="info-box ib-sage" style="margin-bottom:10px;">
+        <span class="ib-icon">&#x1F49A;</span><span style="font-size:14px;">${recipe.health_note}</span></div>` : ''}
+      ${recipe.chef_tip ? `<div class="info-box ib-gold">
+        <span class="ib-icon">&#x1F468;&#x200D;&#x1F373;</span><span style="font-size:14px;">${recipe.chef_tip}</span></div>` : ''}
+    </div>`;
+
+            openModal('recipe-modal');
+            setTimeout(() => {
+                const canvas = document.getElementById('cb-chart');
+                if (canvas && Object.keys(totals).length) {
+                    new Chart(canvas, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Protein', 'Carbs', 'Fat', 'Fiber'],
+                            datasets: [{
+                                data: [fmt(totals.protein, s), fmt(totals.carbs, s), fmt(totals.fat, s), fmt(totals.fiber, s)],
+                                backgroundColor: ['#A47251', '#DD9E59', '#F0D8A1', '#DCF0C3'],
+                                borderWidth: 0, hoverOffset: 5
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { position: 'right', labels: { font: { family: 'DM Sans', size: 12 }, padding: 12 } } }
+                        }
+                    });
+                }
+            }, 80);
+        }
+
+        /* ─────────────────────────────────────────────
+           MODALS
+        ───────────────────────────────────────────── */
+        function openModal(id) {
+            const m = document.getElementById(id);
+            m.classList.remove('hidden');
+            requestAnimationFrame(() => m.classList.add('active'));
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal(id) {
+            const m = document.getElementById(id);
+            m.classList.remove('active');
+            setTimeout(() => { m.classList.add('hidden'); document.body.style.overflow = ''; }, 240);
+        }
+        function bgClose(e, id) { if (e.target === e.currentTarget) closeModal(id); }
+
+        /* ─────────────────────────────────────────────
+           LOADING
+        ───────────────────────────────────────────── */
+        function showLD(text = 'Processing...', sub = 'Please wait') {
+            document.getElementById('ld-text').textContent = text;
+            document.getElementById('ld-sub').textContent = sub;
+            document.getElementById('ld-overlay').classList.remove('hidden');
+        }
+        function hideLD() { document.getElementById('ld-overlay').classList.add('hidden'); }
+
+        /* ─────────────────────────────────────────────
+           TOAST
+        ───────────────────────────────────────────── */
+        function toast(msg, type = 'info') {
+            const el = document.createElement('div');
+            el.className = `toast toast-${type}`;
+            const icon = { success: '&#x2713;', error: '&#x2715;', info: 'i' }[type] || 'i';
+            el.innerHTML = `<span style="font-weight:700;color:${type === 'success' ? '#4ade80' : type === 'error' ? '#f87171' : 'var(--gold)'};">${icon}</span><span>${msg}</span>`;
+            document.getElementById('toast-container').appendChild(el);
+            setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .4s'; }, 3000);
+            setTimeout(() => el.remove(), 3500);
+        }
+
+        /* ─────────────────────────────────────────────
+           HELPERS
+        ───────────────────────────────────────────── */
+        function timeAgo(ts) {
+            if (!ts) return '';
+            const diff = (Date.now() - new Date(ts).getTime()) / 1000;
+            if (diff < 60) return 'just now';
+            if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+            return `${Math.floor(diff / 86400)}d ago`;
+        }
+
+        /* ─────────────────────────────────────────────
+           INIT
+        ───────────────────────────────────────────── */
+        updateNav();
+        loadCommunityFeed();
+    </script>
+</body>
+
+</html>
