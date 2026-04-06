@@ -1423,26 +1423,47 @@
         }
 
         /* ── RESPONSIVE ── */
+        @media(max-width:1024px) {
+            nav {
+                padding: 0 24px;
+            }
+
+            .section,
+            .feed-wrap {
+                padding: 60px 24px;
+            }
+
+            .two-col {
+                gap: 20px;
+            }
+        }
+
         @media(max-width:768px) {
             nav {
+                height: 62px;
                 padding: 0 18px;
             }
 
-            .hero,
+            .hero {
+                padding: 40px 20px;
+                min-height: auto;
+                padding-top: 100px;
+            }
+
             .section,
             .feed-wrap {
-                padding-left: 20px;
-                padding-right: 20px;
+                padding: 48px 20px;
             }
 
             .pg-header,
             .pg-body,
             .pg-body-wide {
-                padding: 0 20px;
+                padding: 0 16px;
             }
 
             .two-col {
                 grid-template-columns: 1fr;
+                gap: 24px;
             }
 
             .feed-grid {
@@ -1451,6 +1472,7 @@
 
             .nut-grid {
                 grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
             }
 
             .cuisine-grid {
@@ -1458,11 +1480,84 @@
             }
 
             .modal {
-                padding: 26px 22px;
+                padding: 26px 20px;
+                max-width: 95%;
             }
 
             .rdm-body {
-                padding: 22px;
+                padding: 20px;
+            }
+        }
+
+        @media(max-width:600px) {
+
+            #nav-center,
+            #nav-right .btn-outline {
+                display: none;
+            }
+
+            .nav-logo-text {
+                display: none;
+            }
+
+            .user-chip span {
+                display: none;
+            }
+
+            .user-chip {
+                padding: 5px;
+            }
+
+            .hero-h1 {
+                font-size: clamp(34px, 10vw, 48px);
+            }
+
+            .hero-p {
+                font-size: 16px;
+            }
+
+            .modal {
+                padding: 22px 18px;
+            }
+        }
+
+        @media(max-width:480px) {
+            .hero-btns {
+                flex-direction: column;
+                width: 100%;
+                max-width: 320px;
+            }
+
+            .hero-btns .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .nut-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .cuisine-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .fc {
+                padding: 24px;
+            }
+
+            .form-card {
+                padding: 18px;
+            }
+
+            .r-hero-img,
+            .r-hero-ph,
+            .rdm-hero,
+            .rdm-hero-ph {
+                aspect-ratio: 4/3;
+            }
+
+            .chart-wrap {
+                height: 160px;
             }
         }
     </style>
