@@ -9,11 +9,12 @@ settings = get_settings()
 
 from sqlalchemy.engine.url import make_url
 
-database_url = settings.database_url
+database_url = settings.database_url.strip()
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql+asyncpg://", 1)
 elif database_url.startswith("postgresql://"):
-    database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    if "+asyncpg" not in database_url:
+        database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
 
 
 url_obj = make_url(database_url)
@@ -32,13 +33,22 @@ if "statement_cache_size" in url_obj.query:
 if "statement_cache_size" not in connect_args:
     connect_args["statement_cache_size"] = 0
 
+from utils.logger import logging as logger
+
 # Create async engine
-engine = create_async_engine(
-    url_obj,
-    echo=settings.debug,
-    pool_pre_ping=True,
-    connect_args=connect_args,
-)
+try:
+    engine = create_async_engine(
+        url_obj,
+        echo=settings.debug,
+        pool_pre_ping=True,
+        connect_args=connect_args,
+    )
+    # logger.info("Database engine created successfully.")
+except Exception as e:
+    # Obfuscate password in URL for logging
+    safe_url = str(url_obj).replace(url_obj.password or "___", "****") if url_obj.password else str(url_obj)
+    logger.error(f"Failed to create database engine with URL: {safe_url}. Error: {e}")
+    raise
 
 # Create async session factory
 AsyncSessionLocal = async_sessionmaker(
