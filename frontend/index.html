@@ -2092,7 +2092,7 @@
             document.querySelectorAll('[id^="page-"]').forEach(p => p.classList.add('hidden'));
             document.getElementById(`page-${id}`).classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            if (id === 'community') loadCommunityFeed();
+            if (id === 'home' || id === 'community') loadCommunityFeed();
             if (id === 'cookbook') loadCookbook();
         }
 
@@ -2327,7 +2327,8 @@
                 const data = await r.json();
                 renderFeed('community-feed', data);
                 renderFeed('home-feed', data.slice(0, 6));
-            } catch (_) {
+            } catch (e) {
+                console.error('Error loading community feed:', e);
                 const msg = '<div class="empty"><div class="empty-icon">&#x1F37D;</div><div class="empty-title">No recipes yet</div><div class="empty-desc">Be the first to share a recipe!</div></div>';
                 document.getElementById('community-feed').innerHTML = msg;
                 document.getElementById('home-feed').innerHTML = msg;
