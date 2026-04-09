@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     )
     
     # Application Settings
-    app_name: str = "Watchtower AI"
+    app_name: str = "Nutri Chef AI"
     debug: bool = Field(default=False, alias="DEBUG")
     
     # Session Settings
