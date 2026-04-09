@@ -1,19 +1,23 @@
 from pydantic_settings import BaseSettings
 from pydantic import Field
 from functools import lru_cache
+from typing import Optional
 
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
     
     # API Keys
-    groq_api_key: str = Field(..., alias="GROQ_API_KEY")
-    usda_api_key: str = Field(..., alias="USDA_API_KEY")
-    serpapi_key: str = Field(..., alias="SERPAPI_KEY")
-    ingredients_recogination_token: str = Field(..., alias="INGREDIENTS_RECOGINATION_TOKEN")
+    groq_api_key: Optional[str] = Field(default=None, alias="GROQ_API_KEY")
+    usda_api_key: Optional[str] = Field(default=None, alias="USDA_API_KEY")
+    serpapi_key: Optional[str] = Field(default=None, alias="SERPAPI_KEY")
+    ingredients_recogination_token: Optional[str] = Field(default=None, alias="INGREDIENTS_RECOGINATION_TOKEN")
     
     # Database
-    database_url: str = Field(..., alias="DATABASE_URL")
+    database_url: str = Field(
+        default="postgresql+asyncpg://postgres:postgres@localhost:5432/nutrichef", 
+        alias="DATABASE_URL"
+    )
     
     # Application Settings
     app_name: str = "Watchtower AI"
