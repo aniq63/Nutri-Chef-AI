@@ -7,7 +7,7 @@ from sqlalchemy.orm import selectinload
 
 from database.connection import get_db
 from database import models, schemas
-from utils.authentication import get_current_user
+from utils.authentication import get_current_user, get_optional_current_user
 
 warnings.filterwarnings("ignore")
 
@@ -27,7 +27,7 @@ router = APIRouter(
 )
 async def get_community_feed(
     db: AsyncSession = Depends(get_db),
-    current_user: models.User = Depends(get_current_user),
+    current_user: Optional[models.User] = Depends(get_optional_current_user),
     skip: int = 0,
     limit: int = 20,
 ):
@@ -54,7 +54,7 @@ async def get_community_feed(
 async def get_community_recipe(
     community_recipe_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: models.User = Depends(get_current_user),
+    current_user: Optional[models.User] = Depends(get_optional_current_user),
 ):
     result = await db.execute(
         select(models.CommunityRecipe)

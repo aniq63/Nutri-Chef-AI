@@ -57,6 +57,23 @@ async def get_current_user(
     return user
 
 
+async def get_optional_current_user(
+    session_token: Optional[str] = Header(None, alias="session-token"),
+    db: AsyncSession = Depends(get_db)
+) -> Optional[User]:
+    """
+    Optional authentication: Returns User if valid token is provided, 
+    otherwise returns None without raising 401.
+    """
+    if not session_token:
+        return None
+
+    result = await db.execute(
+        select(User).where(User.session_token == session_token)
+    )
+    return result.scalar_one_or_none()
+
+
 async def get_current_user_from_query(
     session_token: str,
     db: AsyncSession = Depends(get_db)

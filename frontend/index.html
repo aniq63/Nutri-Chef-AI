@@ -2410,19 +2410,52 @@
         /* ─────────────────────────────────────────────
            COMMUNITY FEED
         ───────────────────────────────────────────── */
+        let _feedCache = null;
+        let _lastFetch = 0;
+        let _isFetching = false;
+
         async function loadCommunityFeed() {
+            // 1. Debounce: If we fetched in the last 60s, don't re-fetch unless force
+            const now = Date.now();
+            if (_feedCache && (now - _lastFetch < 60000)) {
+                renderFeed('community-feed', _feedCache);
+                renderFeed('home-feed', _feedCache.slice(0, 6));
+                return;
+            }
+
+            if (_isFetching) return;
+            _isFetching = true;
+
             const headers = token ? { 'session-token': token } : {};
+            const homeFeed = document.getElementById('home-feed');
+            const commFeed = document.getElementById('community-feed');
+
+            // Show a "Waking up server..." after 2.5s if it's a cold start
+            const coldStartTimer = setTimeout(() => {
+                const wakeMsg = '<div style="text-align:center;padding:20px;color:var(--mid);font-size:13px;">Waking up our AI Chef... please wait.</div>';
+                if (homeFeed) homeFeed.innerHTML = wakeMsg;
+                if (commFeed) commFeed.innerHTML = wakeMsg;
+            }, 2500);
+
             try {
                 const r = await fetch(`${API}/Community/feed`, { headers });
+                clearTimeout(coldStartTimer);
                 if (!r.ok) throw new Error();
                 const data = await r.json();
+                
+                _feedCache = data;
+                _lastFetch = Date.now();
+                
                 renderFeed('community-feed', data);
                 renderFeed('home-feed', data.slice(0, 6));
             } catch (e) {
+                clearTimeout(coldStartTimer);
                 console.error('Error loading community feed:', e);
                 const msg = '<div class="empty"><div class="empty-icon">&#x1F37D;</div><div class="empty-title">No recipes yet</div><div class="empty-desc">Be the first to share a recipe!</div></div>';
-                document.getElementById('community-feed').innerHTML = msg;
-                document.getElementById('home-feed').innerHTML = msg;
+                if (commFeed) commFeed.innerHTML = msg;
+                if (homeFeed) homeFeed.innerHTML = msg;
+            } finally {
+                _isFetching = false;
             }
         }
 
