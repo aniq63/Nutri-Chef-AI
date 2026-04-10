@@ -1,5 +1,6 @@
 import json
 import os
+import traceback
 from typing import Dict, Any
 from warnings import filterwarnings
 
@@ -14,7 +15,7 @@ from config.constants import SYSTEM_PROMPT
 filterwarnings("ignore")
 
 class NutriChefAI:
-    def __init__(self, model_name: str = "llama-3.3-70b-versatile"):
+    def __init__(self, model_name: str = None):
         """
         Initializes the AI Chef with API keys, logging, and LangChain orchestration.
         """
@@ -27,29 +28,36 @@ class NutriChefAI:
                 logging.error("NutriChefAI: GROQ_API_KEY not found in environment.")
                 raise ValueError("GROQ_API_KEY is missing. Check your .env file.")
 
-            logging.info(f"Initializing NutriChefAI with model: {model_name}")
+            # 2. Determine Model Name (Constructor Argument > Env Var > Default)
+            env_model = os.getenv("GROQ_MODEL_NAME")
+            self.model_name = model_name or env_model or "llama-3.3-70b-versatile"
+            
+            logging.info(f"Initializing NutriChefAI with model: {self.model_name}")
 
-            # 2. Setup Prompt and LLM
+            # 3. Setup Prompt and LLM
             self.system_prompt = SYSTEM_PROMPT
             self.prompt = PromptTemplate(
                 template=self.system_prompt,
                 input_variables=["ingredients", "cuisine"]
             )
 
-            # Passing the API key explicitly for clarity, 
-            # though ChatGroq also looks for it in env by default.
+            # Passing the API key explicitly for clarity.
+            # Adding timeout and max_retries for robust cloud connectivity (Railway).
             self.llm = ChatGroq(
-                model_name=model_name,
-                groq_api_key=self.api_key
+                model_name=self.model_name,
+                groq_api_key=self.api_key,
+                request_timeout=60.0,
+                max_retries=3
             )
             
             # Using LangChain Expression Language (LCEL)
             self.chain = self.prompt | self.llm
             
-            logging.info("NutriChefAI: Components initialized successfully.")
+            logging.info(f"NutriChefAI: Components initialized successfully for model {self.model_name}.")
 
         except Exception as e:
             logging.error(f"NutriChefAI Initialization failed: {str(e)}")
+            logging.error(traceback.format_exc())
             raise RuntimeError(f"Initialization failed: {str(e)}")
 
     def _generate(self, ingredients: str, cuisine: str):
@@ -101,11 +109,18 @@ class NutriChefAI:
             }
 
         except Exception as e:
-            logging.error(f"NutriChefAI.run Error: {str(e)}")
+            err_msg = str(e)
+            # Surface specific Groq decommissioning error if present
+            if "decommissioned" in err_msg.lower():
+                logging.critical(f"MODEL DECOMMISSIONED ERROR: {err_msg}")
+            
+            logging.error(f"NutriChefAI.run Error: {err_msg}")
+            logging.error(traceback.format_exc())
+            
             return {
                 "success": False,
                 "data": None,
-                "error": str(e)
+                "error": err_msg
             }
 
     def run_json(self, ingredients: str, cuisine: str) -> str:
