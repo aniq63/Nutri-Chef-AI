@@ -22,7 +22,8 @@ class NutriChefAI:
         try:
             # 1. Load .env and verify GROQ_API_KEY
             load_dotenv()
-            self.api_key = os.getenv("GROQ_API_KEY")
+            api_key_env = os.getenv("GROQ_API_KEY")
+            self.api_key = api_key_env.strip() if api_key_env else None
             
             if not self.api_key:
                 logging.error("NutriChefAI: GROQ_API_KEY not found in environment.")
