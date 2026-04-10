@@ -1422,6 +1422,65 @@
             margin-bottom: 22px;
         }
 
+        /* ── MISSION & IMPACT ── */
+        .mission-section {
+            background: linear-gradient(140deg, #FAF7F2, #FFF);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 80px 40px;
+        }
+        .mission-inner {
+            max-width: 1180px;
+            margin: 0 auto;
+        }
+        .mission-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 48px;
+            align-items: center;
+        }
+        .mission-text p {
+            font-size: 17px;
+            color: #7a6355;
+            line-height: 1.8;
+            margin-bottom: 22px;
+        }
+        .mission-text strong {
+            color: var(--brown);
+        }
+        .mission-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .stat-card {
+            background: #fff;
+            padding: 24px;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: transform var(--t);
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+        .stat-val {
+            display: block;
+            font-family: var(--ff-h);
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--brown);
+            margin-bottom: 4px;
+        }
+        .stat-lbl {
+            font-size: 12px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
         /* ── RESPONSIVE ── */
         @media(max-width:1024px) {
             nav {
@@ -1632,6 +1691,38 @@
                     <p class="fc-desc">All your generated and saved recipes in one beautiful, searchable personal
                         collection available any time.</p>
                     <span class="fc-cta" style="color:#8a7030;">View cookbook &rarr;</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- MISSION SECTION -->
+        <div class="mission-section">
+            <div class="mission-inner">
+                <p class="section-eyebrow">Our Mission</p>
+                <h2 class="section-h2">Solving the "Fridge Dilemma"</h2>
+                <div class="mission-grid">
+                    <div class="mission-text">
+                        <p>Every year, over <strong>$1.3 trillion</strong> of food is wasted globally. Often, this happens because we have ingredients but no plan. Nutri Chef AI was built to turn that waste into wellness.</p>
+                        <p>By leveraging <strong>Vision AI</strong> and <strong>Ultra-fast Inference</strong>, we enable anyone to snap a photo and generate a gourmet, nutritionally-balanced recipe in under 2 seconds. Our goal is to reduce cognitive load while maximizing health and sustainability.</p>
+                    </div>
+                    <div class="mission-stats">
+                        <div class="stat-card">
+                            <span class="stat-val">500ms</span>
+                            <span class="stat-lbl">Inference Speed</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-val">92%</span>
+                            <span class="stat-lbl">Vision Accuracy</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-val">USDA</span>
+                            <span class="stat-lbl">Real-time Data</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-val">Agentic</span>
+                            <span class="stat-lbl">Core Workflow</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
