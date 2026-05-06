@@ -3,6 +3,7 @@
   <p><strong>Transform any ingredients into gourmet recipes with the power of Generative AI.</strong></p>
   
   [![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Website-success?style=for-the-badge)](https://nutri-chef-ai-omega.vercel.app/)
+  [![Video Demo](https://img.shields.io/badge/Video%20Demo-YouTube-red?style=for-the-badge)](https://youtu.be/cuLVceBx1ic)
 </div>
 
 ---
